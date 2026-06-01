@@ -66,10 +66,9 @@ class BiologicalTwinProducerWorker(BaseProducerWorker):
     """
     Worker process that advances the biological twin and fills shared memory.
 
-    The current worker runs the first-generation ``SurrogateTwinModel``.  The
-    comments and class boundary intentionally describe the north-star shape:
-    later iterations can swap in an Izhikevich/population SNN, STDP, STP, and
-    calibrated pharmacology while preserving producer commands and buffer writes.
+    The worker runs the configured twin model behind the SDK producer API.
+    Model implementations can evolve while preserving producer commands and
+    shared-memory buffer writes.
     """
 
     def __init__(

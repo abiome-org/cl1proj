@@ -12,7 +12,7 @@ from typing import Mapping, cast
 import pdoc
 from pdoc.render_helpers import edit_url as _edit_url
 
-# Add cl-sdk source to sys.path FIRST to ensure we document our source, not installed packages
+# Add the local source tree first so docs are built from this checkout.
 here = Path(__file__).parent
 _src_path = str((here / ".." / "src").resolve())
 if _src_path not in sys.path:
