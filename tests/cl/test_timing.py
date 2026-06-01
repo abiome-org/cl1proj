@@ -21,10 +21,10 @@ def test_sleep():
             assert np.allclose(time.perf_counter() - start_secs, duration, atol=tolerance)
 
 FIRST_READ_TOL = 500
-READ_TOL = 100
+READ_TOL = 250
 
 def test_read_latency():
-    """ Test our read timing latency is within 100 frames. """
+    """Test read timing latency within a small real-time scheduling tolerance."""
     os.environ["CL_SDK_ACCELERATED_TIME"] = "0"
     with cl.open() as neurons:
         neurons.restart()

@@ -17,13 +17,13 @@ from .mea import MEAGeometry
 from .noise import PinkNoiseState
 from .plasticity import PlasticityState
 from .profile import TwinProfile
-from .reset_adapter import ResetSNNAdapter
 from .spike_detector import DetectionBlankingWindow, RollingThresholdSpikeDetector
 from .sparse_izhikevich import SparseIzhikevichNetwork, SparseSynapseGraph
 from .surrogate import SurrogateTwinModel
 from .tissue import TissueTopology
 from .training import TwinAcceleratedTrainer, TwinTrainingResult
 from .validation import TwinValidationReport, TwinValidator
+from cl1_clsdk_bridge import ResetSNNAdapter
 
 __all__ = [
     "TwinConfig",

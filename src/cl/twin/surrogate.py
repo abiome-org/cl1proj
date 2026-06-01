@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from cl1_clsdk_bridge import ResetSNNAdapter
+
 from .._data_buffer import SPIKE_SAMPLES_TOTAL, SpikeRecord, StimRecord
 from .config import TwinConfig
 from .dynamics import PopulationDynamics
@@ -14,7 +16,6 @@ from .mea import MEAGeometry
 from .noise import PinkNoiseState
 from .plasticity import PlasticityState
 from .profile import TwinProfile
-from .reset_adapter import ResetSNNAdapter
 from .spike_detector import DetectionBlankingWindow, RollingThresholdSpikeDetector
 from .sparse_izhikevich import SparseIzhikevichNetwork
 from .tissue import TissueTopology

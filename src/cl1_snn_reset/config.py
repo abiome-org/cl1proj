@@ -113,7 +113,7 @@ def load_experiment_config(path: str | Path) -> ExperimentConfig:
         import yaml
     except ModuleNotFoundError as exc:
         raise ModuleNotFoundError(
-            "PyYAML is required for YAML config loading. Install cl-sdk with reset dependencies."
+            "PyYAML is required for YAML config loading. Install this project with reset dependencies."
         ) from exc
 
     with Path(path).open(encoding="utf-8") as handle:

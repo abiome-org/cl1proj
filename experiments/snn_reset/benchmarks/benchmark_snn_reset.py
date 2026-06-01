@@ -9,7 +9,7 @@ from time import perf_counter
 
 import pandas as pd
 
-from cl.snn_reset import (
+from cl1_snn_reset import (
     CultureConfig,
     ExperimentConfig,
     ResetProtocol,

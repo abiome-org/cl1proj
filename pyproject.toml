@@ -1,10 +1,10 @@
 [project]
-name = "cl-sdk"
-version = "0.29.0"
+name = "cl1-reset-experiments"
+version = "0.1.0"
 authors = [
-    { name="Cortical Labs Pte Ltd", email="info@corticallabs.com" },
+    { name="abiome-org" },
 ]
-description = "Simulator for the Cortical Labs cl API"
+description = "CL1 SNN reset experiment platform with a vendored CL SDK simulator"
 readme = "README.md"
 requires-python = ">=3.12.0"
 classifiers = [
@@ -43,21 +43,27 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Cortical-Labs/cl-sdk"
+Homepage = "https://github.com/abiome-org/cl1proj"
 Documentation = "https://docs.corticallabs.com"
-Source = "https://github.com/Cortical-Labs/cl-sdk"
+Source = "https://github.com/abiome-org/cl1proj"
+Upstream-SDK = "https://github.com/Cortical-Labs/cl-sdk"
 
 [build-system]
 requires = ["hatchling >= 1.26"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/cl"]
+packages = [
+    "src/cl",
+    "src/cl1_clsdk_bridge",
+    "src/cl1_snn_reset",
+]
 
 [tool.hatch.build.targets.sdist]
 include = [
     "src",
     "tests",
+    "experiments",
     "build.sh",
     "test-dist.sh",
     "pyproject.toml",
