@@ -7,8 +7,7 @@ class PlasticityState:
     """
     Lightweight plasticity hook for the surrogate and future SNN engines.
 
-    The north-star twin needs STP, STDP, and homeostatic regulation.  This class
-    starts that contract with deterministic per-channel response gain updates so
+    This class provides deterministic per-channel response gain updates so
     closed-loop training can modify future responses without destabilizing SDK
     tests that leave plasticity off.
     """

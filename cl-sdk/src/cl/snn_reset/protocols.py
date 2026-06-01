@@ -149,7 +149,7 @@ def protocol_events(
 
 
 def coarse_protocol_grid() -> list[ResetProtocol]:
-    """Initial coarse sweep from the implementation outline."""
+    """Initial coarse grid for reset protocol screening."""
     beta_values = [-2, -1, 0, 1, 2]
     spatial_modes = ["shared", "independent", "correlated", "phase_shifted"]
     schedules = ["static", "alternating_blue_red", "epoch_pause"]

@@ -10,9 +10,9 @@ class TwinConfig:
     Runtime configuration for the biological twin backend.
 
     The defaults intentionally favor deterministic SDK testing over maximal
-    biological variability.  More expressive north-star features such as DIV,
-    pharmacology, and plasticity are represented here early so future producer
-    implementations can extend behavior without changing the user-facing API.
+    biological variability. Features such as DIV, pharmacology, and plasticity
+    are represented here so producer implementations can extend behavior
+    without changing the user-facing API.
     """
 
     seed: int = 1

@@ -31,8 +31,8 @@ class MEAGeometry:
         Return distance-decayed coupling from one stimulating electrode to all channels.
 
         This is the MEA-level analogue of the volume-conductor approximation in
-        the north-star design.  The returned vector is normalized to one at the
-        strongest affected channel.
+        the tissue coupling model.  The returned vector is normalized to one at
+        the strongest affected channel.
         """
         distances = self.distance_um[int(channel)]
         attenuation = 1.0 / np.power(distances, gamma)

@@ -29,11 +29,11 @@ class SparseIzhikevichNetwork:
     """
     Large-culture Izhikevich SNN using sparse recurrent synapses.
 
-    This engine exists for the CL1 north-star scale: thousands of cells laid out
-    over the MEA with distance-decayed E/I synapses, propagation delays, STP,
-    and bounded STDP. It deliberately shares the compact SNN's public methods so
-    the producer can choose a dense or sparse implementation without changing
-    application-facing SDK calls.
+    This engine supports thousands of cells laid out over the MEA with
+    distance-decayed E/I synapses, propagation delays, STP, and bounded STDP.
+    It deliberately shares the compact SNN's public methods so the producer can
+    choose a dense or sparse implementation without changing application-facing
+    SDK calls.
     """
 
     def __init__(

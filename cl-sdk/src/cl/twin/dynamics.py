@@ -18,12 +18,10 @@ class PopulationDynamics:
     """
     Recurrent MEA-level neural dynamics engine.
 
-    This is the first live dynamics layer toward the north-star biological twin.
-    It is deliberately population-level rather than cell-level: each electrode
-    channel represents a local neural population, and spikes propagate through a
-    calibrated connectivity matrix with bounded refractory and gain dynamics.
-    That gives closed-loop code a stateful, causal network while keeping the SDK
-    simulator fast enough for real-time use.
+    Each electrode channel represents a local neural population, and spikes
+    propagate through a calibrated connectivity matrix with bounded refractory
+    and gain dynamics. This gives closed-loop code a stateful, causal network
+    while keeping the SDK simulator fast enough for real-time use.
     """
 
     def __init__(
