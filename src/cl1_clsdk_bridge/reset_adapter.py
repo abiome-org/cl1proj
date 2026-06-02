@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from cl1_snn_reset import CultureConfig, StimEvent, build_network
+from cl1_snn_reset import StimEvent, build_network
+
+from .twin_mapping import culture_config_from_twin
 
 if TYPE_CHECKING:
     from cl.twin.config import TwinConfig
@@ -34,19 +36,10 @@ class ResetSNNAdapter:
         self.channel_count = int(channel_count)
         self.frames_per_second = int(frames_per_second)
         self.rng = rng
-        culture = CultureConfig(
-            n_neurons                  = max(channel_count, int(neuron_count)),
-            excitatory_fraction        = config.snn_excitatory_fraction,
-            field_size_mm              = 3.0,
-            n_electrodes               = channel_count,
-            connection_length_mm       = max(0.03, config.snn_length_constant_um / 1000.0),
-            long_range_prob            = 0.02,
-            mean_out_degree            = min(config.snn_max_targets_per_source, 64),
-            max_out_degree             = max(8, config.snn_max_targets_per_source),
-            background_noise_mv        = 1.0,
-            spontaneous_rate_hz        = max(0.0, config.baseline_rate_hz),
-            stim_gain_mv_per_uA        = 4.8 * config.snn_coupling,
-            backend                    = config.snn_reset_backend,
+        culture = culture_config_from_twin(
+            config,
+            channel_count=channel_count,
+            neuron_count=neuron_count,
         )
         self.network = build_network(culture, seed=int(config.seed))
         self._pending_stims: list[tuple[int, int, float]] = []

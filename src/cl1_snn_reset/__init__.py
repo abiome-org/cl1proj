@@ -8,6 +8,7 @@ trace probes, and parallel sweeps.
 from .analysis import pareto_front, plot_pareto_summary, plot_protocol_scatter, rank_protocols
 from .config import CultureConfig, ExperimentConfig, SweepConfig, TaskConfig, load_experiment_config
 from .electrodes import ChannelActivity, ElectrodeArray, StimEvent
+from .artifacts import TrialArtifacts
 from .experiment import TrialResult, apply_reset_protocol, record_spontaneous_activity, run_trial
 from .metrics import TrialMetrics, savings_score, weight_erasure_score
 from .network import Brian2CultureNetwork, CorticalCultureNetwork, NetworkSnapshot, build_network
@@ -30,6 +31,7 @@ __all__ = [
     "SweepConfig",
     "TaskConfig",
     "TrainingResult",
+    "TrialArtifacts",
     "TrialMetrics",
     "TrialResult",
     "apply_reset_protocol",

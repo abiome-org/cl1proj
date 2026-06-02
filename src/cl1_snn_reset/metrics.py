@@ -6,10 +6,8 @@ from typing import Any
 
 import numpy as np
 
-from .config import TaskConfig
+from .artifacts import TrialArtifacts
 from .electrodes import ChannelActivity
-from .protocols import ResetProtocol
-from .task import TrainingResult
 
 
 @dataclass(frozen=True)
@@ -54,6 +52,7 @@ class TrialMetrics:
     active_channel_fraction: float
     branching_ratio: float
     path_erasure: float
+    residual_trace_correlation: float
 
     def to_row(self) -> dict[str, Any]:
         return self.__dict__.copy()
@@ -164,47 +163,49 @@ def path_erasure_score(
     return float(1.0 - abs(residual_delta) / (abs(trained_delta) + 1e-9))
 
 
-def compute_trial_metrics(
-    *,
-    W0: np.ndarray,
-    Wtrained: np.ndarray,
-    Wpost: np.ndarray,
-    A0: ChannelActivity,
-    Apost: ChannelActivity,
-    initial: TrainingResult,
-    relearn: TrainingResult,
-    post_behavior: float,
-    protocol: ResetProtocol,
-    seed: int,
-    total_pulses: int,
-    trace_auc: float,
-    path0: float,
-    path_trained: float,
-    path_post: float,
-) -> TrialMetrics:
-    crit = criticality(Apost, naive=A0)
-    health = health_metrics(Apost, duration_s=max(protocol.duration_s, Apost.duration_ms / 1000.0))
+def compute_trial_metrics(artifacts: TrialArtifacts) -> TrialMetrics:
+    crit = criticality(artifacts.Apost, naive=artifacts.A0)
+    health = health_metrics(
+        artifacts.Apost,
+        duration_s=max(
+            artifacts.protocol.duration_s,
+            artifacts.Apost.duration_ms / 1000.0,
+        ),
+    )
+    protocol = artifacts.protocol
     return TrialMetrics(
-        protocol_id             = protocol.id,
-        seed                    = int(seed),
-        beta                    = float(protocol.beta),
-        schedule                = protocol.schedule,
-        spatial_mode            = protocol.spatial_mode,
-        duration_s              = float(protocol.duration_s),
-        current_uA              = float(protocol.current_uA),
-        pulse_width_us          = int(protocol.pulse_width_us),
-        total_pulses            = int(total_pulses),
-        initial_trials          = int(initial.trials_to_criterion),
-        relearn_trials          = int(relearn.trials_to_criterion),
-        weight_erasure          = weight_erasure_score(W0, Wtrained, Wpost),
-        residual_performance    = float(post_behavior),
-        savings                 = savings_score(initial.trials_to_criterion, relearn.trials_to_criterion),
-        criticality_distance    = crit.distance_from_naive,
-        trace_auc               = float(trace_auc),
-        health                  = health.score,
-        energy_cost             = protocol.total_charge_uC(total_pulses),
-        firing_rate_hz          = health.firing_rate_hz,
-        active_channel_fraction = health.active_channel_fraction,
-        branching_ratio         = crit.branching_ratio,
-        path_erasure            = path_erasure_score(path0, path_trained, path_post),
+        protocol_id                 = protocol.id,
+        seed                        = int(artifacts.seed),
+        beta                        = float(protocol.beta),
+        schedule                    = protocol.schedule,
+        spatial_mode                = protocol.spatial_mode,
+        duration_s                  = float(protocol.duration_s),
+        current_uA                  = float(protocol.current_uA),
+        pulse_width_us              = int(protocol.pulse_width_us),
+        total_pulses                = int(artifacts.total_pulses),
+        initial_trials              = int(artifacts.initial.trials_to_criterion),
+        relearn_trials              = int(artifacts.relearn.trials_to_criterion),
+        weight_erasure              = weight_erasure_score(artifacts.W0, artifacts.Wtrained, artifacts.Wpost),
+        residual_performance        = float(artifacts.post_behavior),
+        savings                     = savings_score(
+            artifacts.initial.trials_to_criterion,
+            artifacts.relearn.trials_to_criterion,
+        ),
+        criticality_distance        = crit.distance_from_naive,
+        trace_auc                   = float(artifacts.trace_auc),
+        health                      = health.score,
+        energy_cost                 = protocol.total_charge_uC(artifacts.total_pulses),
+        firing_rate_hz              = health.firing_rate_hz,
+        active_channel_fraction     = health.active_channel_fraction,
+        branching_ratio             = crit.branching_ratio,
+        path_erasure                = path_erasure_score(
+            artifacts.path0,
+            artifacts.path_trained,
+            artifacts.path_post,
+        ),
+        residual_trace_correlation  = residual_trace_correlation(
+            artifacts.W0,
+            artifacts.Wtrained,
+            artifacts.Wpost,
+        ),
     )

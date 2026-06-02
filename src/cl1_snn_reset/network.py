@@ -53,6 +53,8 @@ class CorticalCultureNetwork:
         self.signs = np.sign(self.baseline_weights)
         self._out_start = self._csr_start(self.sources, self.n_neurons)
         self._incoming_sources, self._incoming_edges = self._incoming_index()
+        self._channel_matrix_cache: np.ndarray | None = None
+        self._channel_matrix_weights_id: int | None = None
 
     @property
     def synapse_count(self) -> int:
@@ -75,6 +77,7 @@ class CorticalCultureNetwork:
             raise ValueError("Weight vector shape does not match this network.")
         magnitudes = np.clip(np.abs(values), 0.0, self.cfg.w_max)
         self.weights = magnitudes * self.signs
+        self._invalidate_channel_matrix_cache()
 
     def advance(
         self,
@@ -144,7 +147,14 @@ class CorticalCultureNetwork:
             duration_ms=steps * dt,
         )
 
+    def _invalidate_channel_matrix_cache(self) -> None:
+        self._channel_matrix_cache = None
+        self._channel_matrix_weights_id = None
+
     def channel_connectivity_matrix(self) -> np.ndarray:
+        weights_id = id(self.weights)
+        if self._channel_matrix_cache is not None and self._channel_matrix_weights_id == weights_id:
+            return self._channel_matrix_cache
         channels_source = self.electrodes.nearest_channel[self.sources]
         channels_target = self.electrodes.nearest_channel[self.targets]
         matrix = np.zeros((self.cfg.n_electrodes, self.cfg.n_electrodes), dtype=np.float64)
@@ -156,7 +166,9 @@ class CorticalCultureNetwork:
         )
         counts = np.zeros_like(matrix)
         np.add.at(counts, (channels_source[positive], channels_target[positive]), 1.0)
-        return matrix / np.maximum(counts, 1.0)
+        self._channel_matrix_cache = matrix / np.maximum(counts, 1.0)
+        self._channel_matrix_weights_id = weights_id
+        return self._channel_matrix_cache
 
     def path_strength(
         self,
@@ -261,8 +273,9 @@ class CorticalCultureNetwork:
             np.add.at(self.syn_current, targets, weights)
 
     def _apply_stdp(self, fired: np.ndarray, now_ms: float) -> None:
-        fired_set = set(fired.tolist())
-        for post in fired.tolist():
+        fired_mask = np.zeros(self.n_neurons, dtype=bool)
+        fired_mask[fired] = True
+        for post in fired:
             edges = self._incoming_edges[post]
             if edges.size == 0:
                 continue
@@ -275,7 +288,7 @@ class CorticalCultureNetwork:
                     -delta[causal] / self.cfg.stdp_tau_ms
                 )
 
-        for source in fired.tolist():
+        for source in fired:
             if not self.is_excitatory[source]:
                 continue
             start = self._out_start[source]
@@ -285,10 +298,7 @@ class CorticalCultureNetwork:
             targets = self.targets[start:end]
             delta = now_ms - self.last_spike_ms[targets]
             anti_causal = (delta >= 0.0) & (delta <= self.cfg.stdp_tau_ms)
-            # Do not immediately punish synapses whose target fired this same
-            # step; those are handled as causal arrivals above.
-            if fired_set:
-                anti_causal &= np.array([target not in fired_set for target in targets], dtype=bool)
+            anti_causal &= ~fired_mask[targets]
             if np.any(anti_causal):
                 edges = np.arange(start, end, dtype=np.int64)[anti_causal]
                 self.weights[edges] -= self.cfg.stdp_a_minus * np.exp(
@@ -301,6 +311,7 @@ class CorticalCultureNetwork:
         inhibitory = self.signs < 0.0
         self.weights[excitatory] = np.clip(self.weights[excitatory], 0.0, self.cfg.w_max)
         self.weights[inhibitory] = np.clip(self.weights[inhibitory], self.cfg.w_min, 0.0)
+        self._invalidate_channel_matrix_cache()
 
     def _update_rate_ema(self, total_fired: int, dt_ms: float) -> None:
         instantaneous_rate = (total_fired / max(self.n_neurons, 1)) * (1000.0 / dt_ms)
@@ -412,8 +423,11 @@ class Brian2CultureNetwork:
     def weights_vector(self) -> np.ndarray:
         return np.asarray(self.syn.w / self.b2.mV, dtype=np.float64)
 
-    def snapshot(self) -> NetworkSnapshot:
+    def _sync_fast(self) -> None:
         self._fast.set_weights(self.weights_vector())
+
+    def snapshot(self) -> NetworkSnapshot:
+        self._sync_fast()
         return self._fast.snapshot()
 
     def set_weights(self, weights: np.ndarray) -> None:
@@ -427,10 +441,8 @@ class Brian2CultureNetwork:
         plasticity: bool = True,
         record: bool = True,
     ) -> ChannelActivity:
-        # Brian2 does not let us cheaply toggle the STDP code path on existing
-        # Synapses, so non-plastic evaluation uses the fast engine semantics.
         if not plasticity:
-            self._fast.set_weights(self.weights_vector())
+            self._sync_fast()
             return self._fast.advance(duration_ms, events, plasticity=False, record=record)
         for event in events or []:
             drive = self.electrodes.stimulate(event) * self.cfg.stim_gain_mv_per_uA
@@ -445,11 +457,11 @@ class Brian2CultureNetwork:
         return self.electrodes.record(local_times, neuron_indices, duration_ms=duration_ms)
 
     def path_strength(self, input_channels: Iterable[int], target_channels: Iterable[int]) -> float:
-        self._fast.set_weights(self.weights_vector())
+        self._sync_fast()
         return self._fast.path_strength(input_channels, target_channels)
 
     def channel_connectivity_matrix(self) -> np.ndarray:
-        self._fast.set_weights(self.weights_vector())
+        self._sync_fast()
         return self._fast.channel_connectivity_matrix()
 
 

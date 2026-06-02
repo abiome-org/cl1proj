@@ -3,7 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
+from cl1_clsdk_bridge import RESET_DYNAMICS_MODES, is_reset_dynamics
+
 from .config import TwinConfig
+
+_SNN_DYNAMICS = {"izhikevich", "snn"} | set(RESET_DYNAMICS_MODES)
 
 CapabilityStatus = Literal["implemented", "approximated", "roadmap"]
 
@@ -107,7 +111,7 @@ def describe_twin_capabilities(config: TwinConfig | None = None) -> TwinCapabili
         ),
         TwinCapability(
             name="Population recurrence",
-            status="implemented" if dynamics in {"population", "izhikevich", "snn", "snn_reset", "reset_snn", "brian2_reset"} else "approximated",
+            status="implemented" if dynamics in {"population", *_SNN_DYNAMICS} else "approximated",
             detail=(
                 "PopulationDynamics provides MEA-level recurrence, and SNN modes "
                 "provide cell-level recurrent propagation."
@@ -123,7 +127,7 @@ def describe_twin_capabilities(config: TwinConfig | None = None) -> TwinCapabili
         ),
         TwinCapability(
             name="Reset-platform SNN",
-            status="implemented" if dynamics in {"snn_reset", "reset_snn", "brian2_reset"} else "approximated",
+            status="implemented" if is_reset_dynamics(dynamics) else "approximated",
             detail=(
                 "The train-reset-relearn SNN can be selected in the SDK twin via "
                 "CL_SDK_TWIN_DYNAMICS=snn_reset, preserving electrode-only input "
@@ -174,7 +178,7 @@ def describe_twin_capabilities(config: TwinConfig | None = None) -> TwinCapabili
             name="Large-scale sparse SNN",
             status=(
                 "implemented"
-                if dynamics in {"izhikevich", "snn", "snn_reset", "reset_snn", "brian2_reset"}
+                if dynamics in _SNN_DYNAMICS
                 and resolved.snn_neuron_count >= resolved.snn_sparse_threshold
                 else "approximated"
             ),

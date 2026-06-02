@@ -67,7 +67,6 @@ class TaskConfig:
     pulse_width_us: int = 160
     response_window_ms: tuple[float, float] = (4.0, 35.0)
     criterion_response_probability: float = 0.65
-    criterion_window_trials: int = 8
     max_trials: int = 120
     eval_trials: int = 8
     eval_interval_trials: int = 8

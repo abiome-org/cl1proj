@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from cl1_clsdk_bridge import ResetSNNAdapter
+from cl1_clsdk_bridge import RESET_DYNAMICS_MODES, ResetSNNAdapter, is_reset_dynamics
 
 from .._data_buffer import SPIKE_SAMPLES_TOTAL, SpikeRecord, StimRecord
 from .config import TwinConfig
@@ -139,7 +139,6 @@ class SurrogateTwinModel:
             else config.snn_neuron_count
         )
         dynamics_mode = config.dynamics_mode.lower()
-        reset_snn_modes = {"snn_reset", "reset_snn", "brian2_reset"}
         use_sparse_snn = (
             dynamics_mode in {"izhikevich", "snn"}
             and configured_snn_neuron_count >= config.snn_sparse_threshold
@@ -172,7 +171,7 @@ class SurrogateTwinModel:
             refractory_frames   = config.refractory_frames,
             rng                 = self.rng,
         )
-        if dynamics_mode in reset_snn_modes:
+        if is_reset_dynamics(dynamics_mode):
             self._snn = ResetSNNAdapter(
                 channel_count     = channel_count,
                 neuron_count      = snn_neuron_count,
@@ -256,7 +255,7 @@ class SurrogateTwinModel:
         local_drive *= self._plasticity.response_gain
         self._excitability += 0.15 * local_drive
         self._plasticity.on_stim(stim.timestamp, coupling)
-        if self.config.dynamics_mode.lower() in {"izhikevich", "snn", "snn_reset", "reset_snn", "brian2_reset"}:
+        if self.config.dynamics_mode.lower() in {"izhikevich", "snn"} | set(RESET_DYNAMICS_MODES):
             if hasattr(self._snn, "apply_timed_stim"):
                 self._snn.apply_timed_stim(stim.timestamp, stim.channel, local_drive)
             else:
@@ -355,7 +354,7 @@ class SurrogateTwinModel:
 
     def _add_snn_spikes(self, from_timestamp: int, frame_count: int) -> None:
         """Advance the optional cell-level SNN and queue its MEA spike outputs."""
-        if self.config.dynamics_mode.lower() not in {"izhikevich", "snn", "snn_reset", "reset_snn", "brian2_reset"}:
+        if self.config.dynamics_mode.lower() not in {"izhikevich", "snn"} | set(RESET_DYNAMICS_MODES):
             return
         for spike in self._snn.render(
             from_timestamp,
