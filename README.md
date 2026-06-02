@@ -1,116 +1,147 @@
 # CL1 Reset Experiments
 
-This repository tests whether a trained cortical culture can be driven back
-toward a naive, trainable state using stimulation alone.  The practical target
-is a reset operation for wetware computing: not merely suppressing behavior for a
-moment, but reducing the learned trace enough that relearning no longer shows a
-large shortcut.
+This repository studies whether a trained cortical culture can be returned to a
+naive, trainable state using stimulation alone.  The long-term target is a
+practical reset operation for wetware computing: a protocol that removes a
+learned trace, preserves culture health, and does not leave a strong relearning
+shortcut behind.
 
-The project starts in simulation, where hidden synaptic weights are observable,
-then preserves the same channel-level interface needed for later CL1 wetware
-validation.
+The first stage is a simulator because it can expose the hidden weight matrix.
+The simulator is still constrained at the interface: stimulation is delivered as
+64-channel multielectrode-array pulse events, and candidate protocols are judged
+through channel-level spikes, behavior, health, and trace-probe readouts.
 
-## Research Question
+## What The Experiments Ask
 
-Can electrode stimulation with carefully chosen temporal and spatial statistics
-erase a learned response in a fixed-sign STDP network, while keeping the culture
-healthy enough to learn again?
+The central question is not just whether behavior falls to chance after a
+stimulation protocol.  A culture can stop responding because it is silent,
+depressed, damaged, saturated, or temporarily decorrelated.  A useful reset
+should also reduce the learned synaptic trace and avoid savings when the same
+task is trained again.
 
-The key distinction is between looking reset and being reset.  A culture can
-fall to chance performance because it is silent, damaged, globally depressed, or
-temporarily decorrelated.  A useful reset should also reduce savings: after the
-protocol, the network should not relearn the old task substantially faster than
-it learned from naive.
+The experiments therefore separate three outcomes:
 
-## Experimental Thesis
+- Apparent behavioral reset: post-reset response probability falls.
+- Mechanistic reset: trained weights move back toward the naive weight state.
+- Functional reset: relearning is not substantially faster than initial
+  learning.
 
-Learning is treated as a movement through synaptic-weight space.  Training digs
-a task-specific basin; reset attempts to flatten or move the system back toward
-the naive landscape without direct weight access.
+A protocol only looks promising if it improves all three while keeping the
+network responsive enough to learn afterward.
 
-The actuator is intentionally wetware-legal: channel-level electrode stimulation
-only.  Protocols vary the color of pulse-event statistics, their schedule over
-time, and their spatial correlation across electrodes.  The simulator keeps
-ground-truth weights for analysis, but candidate protocols are judged through
-the CL1-like interface wherever possible.
+## Experimental Model
 
-## Experimental Flow
+The reset simulator models a scaled dissociated cortical culture on a
+multielectrode array:
 
-Each trial follows the same loop:
+- Spatially embedded recurrent excitatory/inhibitory spiking network.
+- Local-distance-biased connectivity with sparse longer-range recurrence.
+- Fixed-sign STDP on excitatory synapses plus slow homeostatic stabilization.
+- Electrode stimulation as charge-balanced pulse events.
+- Electrode readout as channel-level multi-unit activity.
 
-1. Build a spatial recurrent excitatory/inhibitory culture on a 64-channel MEA.
-2. Record naive activity and hidden baseline weights.
-3. Train an electrode-to-electrode conditioned response task to criterion.
-4. Apply a reset protocol made of charge-balanced pulse events.
-5. Measure post-reset task behavior, spontaneous activity, health, and weights.
-6. Retrain the same task and measure savings.
+The simulator keeps full weights and spikes for analysis, but the experiment
+runner uses the same channel-level interface that later wetware protocols will
+need.
 
-In simulation, the hidden weight matrix answers whether apparent behavioral
-reset corresponds to real weight-space erasure.  In CL1-style operation, the
-same protocol is constrained to electrode stimulation and channel-level readout.
+## Trial Loop
+
+Each replicate follows a train-reset-relearn sequence:
+
+1. Build a naive 2D culture and record baseline weights and activity.
+2. Train an electrode-to-electrode conditioned response task.
+3. Apply one reset protocol made of colored channel pulse events.
+4. Measure post-reset behavior, activity, health, criticality, and weights.
+5. Train the same task again and measure relearning savings.
+
+The task uses paired stimulation: an input electrode pulse followed by a target
+electrode pulse.  Native STDP strengthens paths that make the target response
+follow the input.  Reset protocols then try to erase that learned structure
+without direct access to synapses.
 
 ## Protocol Space
 
-The sweep explores three actuator axes:
+The coarse sweep varies the stimulation statistics along three actuator axes:
 
-- **Temporal color:** spectral slope `beta`, from violet/blue through white to
+- Temporal color: spectral slope `beta` from violet/blue through white to
   pink/red event timing.
-- **Schedule:** static stimulation, alternating regimes, and epoch/pause
+- Schedule: static stimulation, alternating color regimes, or epoch/pause
   structure.
-- **Spatial pattern:** shared, independent, correlated, or phase-shifted channel
+- Spatial pattern: shared, independent, correlated, or phase-shifted channel
   activity.
 
-The main candidates are not arbitrary current injection into neurons.  They are
-channel-level pulse trains that approximate colored noise and remain compatible
-with the multielectrode-array interface.
+Duration, current, pulse width, and pulse count are tracked as cost variables.
+The protocol set is intentionally expressed as electrode pulse trains rather
+than arbitrary direct current injection into individual neurons.
 
-## Readouts
+## Scoring
 
-The project ranks protocols by a bundle of outcomes rather than one scalar:
+Protocols are ranked by a bundle of readouts:
 
-- **Weight erasure:** SNN-only distance from trained weights back toward naive.
-- **Residual behavior:** task response probability after reset.
-- **Savings:** relearning trials-to-criterion relative to initial learning.
-- **Trace detectability:** classifier AUC for distinguishing naive from
-  post-reset activity using channel readouts.
-- **Criticality and health:** firing rates, EI balance, avalanche statistics,
-  responsiveness, and avoidance of silent or saturated regimes.
-- **Cost:** stimulation duration, pulse count, and current burden.
+- Weight erasure: whether post-reset weights return toward naive weights.
+- Path erasure: whether the task-specific input-to-target path weakens.
+- Residual behavior: target response probability after reset.
+- Savings: relearning trials relative to initial trials.
+- Trace AUC: classifier detectability of trained post-reset activity from
+  channel readouts.
+- Health and criticality: firing rate, active-channel fraction, branching
+  ratio, and distance from naive spontaneous activity.
+- Energy cost: pulses, current, and duration.
 
-Low residual behavior is not enough.  A strong candidate should also have low
-savings, weak trace detectability, preserved trainability, and tolerable
-stimulation cost.
+The ranking is a screen, not a proof.  The Pareto front is more important than a
+single score because a low-cost protocol, a strong erasure protocol, and a
+high-health protocol can be different candidates.
 
-## Interpretation
+## Current 10k-Neuron Result
 
-A positive result would identify stimulation statistics that make a trained
-culture behave and relearn like a fresh one.  A negative result is still useful:
-if savings persists despite broad protocol search and restored activity
-statistics, then stimulation alone may have a reset floor and stronger
-interventions may be required.
+The calibrated full grid was run on an Apple M4 Max Mac with 64 GiB unified
+memory:
 
-## Repository Layout
+- Network size: 10,000 neurons, 64-channel MEA.
+- Grid: 540 protocols x 3 seeds = 1,620 train-reset-relearn jobs.
+- Parallelism: 8 process workers on a 16-logical-CPU machine.
+- Primary runtime: 7,103.18 seconds, or about 1 hour 58 minutes.
+- Throughput: 0.2281 jobs/second.
+- Independent temp replication runtime: 7,083.15 seconds.
 
-- `src/cl1_snn_reset/`: core reset simulator, including the spatial E/I culture
-  model, MEA electrode interface, colored pulse protocols, train-reset-relearn
-  loop, metrics, trace probe, and sweep helpers.
-- `src/cl1_clsdk_bridge/`: adapters that connect experiment packages to the CL
-  SDK simulator runtime.
-- `src/cl/`: vendored CL SDK runtime surface.  Keep SDK compatibility work here;
-  keep experiment code outside this package.
-- `experiments/snn_reset/`: benchmark and sweep entrypoints.
-- `tests/snn_reset/`: reset simulator tests.
-- `tests/clsdk_bridge/`: SDK bridge tests.
-- `docs/snn_reset/` and `docs/clsdk_bridge/`: notes for the local experiment
-  packages.
+The aggregate outputs replicated exactly: `summary.csv`, `ranked.csv`, and
+`pareto.csv` are identical between the primary run and the neutral temp
+replication.  The only raw-table differences are per-job wall-clock timings.
 
-Compatibility imports are kept for existing notebooks and SDK call sites:
-`cl.snn_reset` re-exports `cl1_snn_reset`, and `cl.twin.ResetSNNAdapter`
-re-exports the adapter from `cl1_clsdk_bridge`.
+The scientific result is negative for true reset in this configuration.  Every
+protocol had negative weight erasure, meaning post-reset weights were farther
+from the naive state than the trained weights were.  The best-ranked protocols
+are therefore the least damaging/least costly candidates, not successful resets.
+The top Pareto candidate was:
+
+```text
+b2_epoch_pause_independent_0.75s_0.8uA
+weight_erasure=-0.4373
+residual_performance=0.5000
+savings=-1.3889
+trace_auc=0.5307
+health=0.0996
+energy_cost=0.0048
+```
+
+This argues that the current fixed-sign STDP reset actuator is not yet enough to
+restore the simulated culture to a naive weight state.  It is still useful:
+behavioral suppression and low trace AUC alone would have overstated reset
+quality without the hidden-weight and savings checks.
+
+Full run notes are in
+`docs/snn_reset/full_grid_10k_calibrated_20260602.md`.
 
 ## Running
 
-Run the benchmark:
+Run the calibrated full 10k-neuron grid:
+
+```bash
+MPLCONFIGDIR=/private/tmp/mpl-cache XDG_CACHE_HOME=/private/tmp/xdg-cache \
+  .venv-uv/bin/python experiments/snn_reset/full_grid_search.py
+```
+
+Run the smaller benchmark:
 
 ```bash
 MPLCONFIGDIR=/private/tmp/mpl-cache XDG_CACHE_HOME=/private/tmp/xdg-cache \
@@ -123,19 +154,34 @@ Run focused reset and bridge tests:
 .venv-uv/bin/python -m pytest tests/snn_reset tests/clsdk_bridge -q
 ```
 
-Enable the reset SNN inside the simulator:
+Enable the reset SNN inside the CL SDK simulator:
 
 ```bash
 CL_SDK_SIM_MODE=surrogate
 CL_SDK_TWIN_DYNAMICS=snn_reset
 ```
 
-## Relevant Prior Art
+## Where Things Live
 
-The experiment is motivated by several neighboring lines of work: attractor
-unlearning, coordinated reset stimulation, depotentiation, spontaneous activity
-and criticality recovery, dissociated-culture learning, and machine unlearning.
-Useful starting points include Hopfield-style unlearning, Crick-Mitchison sleep
-unlearning, Tass coordinated reset, DishBrain, Wagenaar/Pine/Potter culture
-stimulation results, depotentiation studies, SNN unlearning, and recent work on
-noise-driven maintenance of critical dynamics.
+- `src/cl1_snn_reset/`: reset simulator, protocols, metrics, trace probe, and
+  sweep helpers.
+- `src/cl1_clsdk_bridge/`: adapter between the reset simulator and the CL SDK
+  twin runtime.
+- `src/cl/`: CL SDK runtime surface and compatibility imports.
+- `experiments/snn_reset/`: benchmark and full-grid entrypoints.
+- `docs/snn_reset/`: experiment notes and full-grid reports.
+- `tests/snn_reset/` and `tests/clsdk_bridge/`: focused simulator and bridge
+  tests.
+
+Compatibility imports are kept for existing notebooks and SDK call sites:
+`cl.snn_reset` re-exports `cl1_snn_reset`, and `cl.twin.ResetSNNAdapter`
+re-exports the adapter from `cl1_clsdk_bridge`.
+
+## Prior Art
+
+The experiment connects several related threads: Hopfield and Crick-Mitchison
+unlearning, coordinated reset stimulation, depotentiation, dissociated-culture
+learning, criticality recovery, and machine unlearning.  Useful starting points
+include DishBrain, Wagenaar/Pine/Potter culture stimulation, Tass coordinated
+reset, depotentiation studies, SNN unlearning, and noise-driven maintenance of
+critical dynamics.
