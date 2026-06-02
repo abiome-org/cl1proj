@@ -3,7 +3,7 @@
 This folder contains runnable benchmark and sweep entrypoints for the reset
 simulator.
 
-Run the full 10k-neuron coarse grid:
+Run the calibrated full 10k-neuron coarse grid:
 
 ```bash
 MPLCONFIGDIR=/private/tmp/mpl-cache XDG_CACHE_HOME=/private/tmp/xdg-cache \

@@ -296,17 +296,17 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--local-candidate-multiplier", type=int, default=6)
     parser.add_argument("--spontaneous-rate-hz", type=float, default=0.12)
     parser.add_argument("--backend", choices=["numpy", "brian2"], default="numpy")
-    parser.add_argument("--seeds", type=int, nargs="+", default=[1, 2, 3])
+    parser.add_argument("--seeds", type=int, nargs="+", default=[1, 3, 4])
     parser.add_argument("--workers", type=int, default=max(1, min(8, os.cpu_count() or 1)))
     parser.add_argument("--executor", choices=["process", "thread"], default="process")
     parser.add_argument("--build-workers", type=int, default=None)
     parser.add_argument("--input-channels", type=int, nargs="+", default=[8])
-    parser.add_argument("--target-channels", type=int, nargs="+", default=[55])
+    parser.add_argument("--target-channels", type=int, nargs="+", default=[9])
     parser.add_argument("--max-trials", type=int, default=120)
     parser.add_argument("--eval-interval-trials", type=int, default=8)
     parser.add_argument("--eval-trials", type=int, default=8)
     parser.add_argument("--inter-trial-ms", type=float, default=70.0)
-    parser.add_argument("--criterion-response-probability", type=float, default=0.65)
+    parser.add_argument("--criterion-response-probability", type=float, default=0.875)
     parser.add_argument("--readout-window-s", type=float, default=1.5)
     parser.add_argument("--warmup-s", type=float, default=0.5)
     parser.add_argument("--output-dir", type=Path, default=None)
@@ -357,9 +357,12 @@ def main() -> None:
             "local_candidate_multiplier": args.local_candidate_multiplier,
             "spontaneous_rate_hz": args.spontaneous_rate_hz,
             "backend": args.backend,
+            "input_channels": args.input_channels,
+            "target_channels": args.target_channels,
             "max_trials": args.max_trials,
             "eval_interval_trials": args.eval_interval_trials,
             "eval_trials": args.eval_trials,
+            "criterion_response_probability": args.criterion_response_probability,
             "readout_window_s": args.readout_window_s,
             "warmup_s": args.warmup_s,
         },
