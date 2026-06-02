@@ -74,6 +74,8 @@ def residual_trace_correlation(W0: np.ndarray, Wtrained: np.ndarray, Wpost: np.n
 
 
 def savings_score(initial_trials: int, relearn_trials: int) -> float:
+    if initial_trials <= 0:
+        return 0.0 if relearn_trials <= 0 else -1.0
     return float(1.0 - (float(relearn_trials) / (float(initial_trials) + 1e-9)))
 
 

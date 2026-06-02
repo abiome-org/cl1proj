@@ -67,7 +67,7 @@ def evaluate_task(net, cfg: TaskConfig, *, trials: int | None = None) -> float:
 def train_to_criterion(net, cfg: TaskConfig) -> TrainingResult:
     """Train by paired stimulation until response probability crosses criterion."""
     history: list[float] = []
-    latest = evaluate_task(net, cfg, trials=max(2, cfg.eval_trials // 2))
+    latest = evaluate_task(net, cfg, trials=cfg.eval_trials)
     history.append(latest)
     if latest >= cfg.criterion_response_probability:
         return TrainingResult(0, latest, True, tuple(history))

@@ -9,6 +9,7 @@ from cl1_snn_reset import (
     build_network,
     protocol_events,
     run_trial,
+    savings_score,
 )
 
 
@@ -95,3 +96,8 @@ def test_train_reset_relearn_trial_returns_required_metrics():
     assert -10.0 < row["weight_erasure"] < 10.0
     assert 0.0 <= row["residual_performance"] <= 1.0
     assert 0.5 <= row["trace_auc"] <= 1.0
+
+
+def test_savings_score_handles_initial_criterion_edge_case():
+    assert savings_score(0, 0) == 0.0
+    assert savings_score(0, 12) == -1.0

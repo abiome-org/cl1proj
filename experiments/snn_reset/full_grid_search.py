@@ -173,6 +173,9 @@ def _write_report(
     metadata: dict[str, Any],
 ) -> Path:
     report_path = output_dir / "report.md"
+    initial_zero = int((raw["initial_trials"] <= 0).sum()) if "initial_trials" in raw else 0
+    relearn_zero = int((raw["relearn_trials"] <= 0).sum()) if "relearn_trials" in raw else 0
+    reached_training_floor = int((raw["initial_trials"] >= metadata["config"]["max_trials"]).sum()) if "initial_trials" in raw else 0
     top_columns = [
         "protocol_id",
         "reset_score",
@@ -213,6 +216,12 @@ def _write_report(
         f"- Workers: `{metadata['workers']}` via `{metadata['executor']}` executor",
         f"- Elapsed seconds: `{metadata['elapsed_s']:.2f}`",
         f"- Jobs per second: `{metadata['jobs_per_s']:.4g}`",
+        "",
+        "## Data Quality",
+        "",
+        f"- Initial-at-criterion rows: `{initial_zero}`",
+        f"- Relearn-at-criterion rows: `{relearn_zero}`",
+        f"- Initial max-trial rows: `{reached_training_floor}`",
         "",
         "## Objective",
         "",
