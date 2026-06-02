@@ -3,6 +3,13 @@
 This folder contains runnable benchmark and sweep entrypoints for the reset
 simulator.
 
+Run the full 10k-neuron coarse grid:
+
+```bash
+MPLCONFIGDIR=/private/tmp/mpl-cache XDG_CACHE_HOME=/private/tmp/xdg-cache \
+  .venv-uv/bin/python experiments/snn_reset/full_grid_search.py
+```
+
 The benchmark entrypoint is:
 
 ```bash

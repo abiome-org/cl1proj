@@ -43,6 +43,15 @@ def run_sweep(
 
 def summarize_sweep(df: pd.DataFrame) -> pd.DataFrame:
     """Aggregate replicate rows by protocol."""
+    protocol_fields = [
+        "beta",
+        "schedule",
+        "spatial_mode",
+        "duration_s",
+        "current_uA",
+        "pulse_width_us",
+        "total_pulses",
+    ]
     metrics = [
         "weight_erasure",
         "residual_performance",
@@ -53,8 +62,11 @@ def summarize_sweep(df: pd.DataFrame) -> pd.DataFrame:
         "energy_cost",
         "path_erasure",
     ]
+    aggregations = {field: "first" for field in protocol_fields if field in df.columns}
+    aggregations |= {metric: "mean" for metric in metrics}
+    aggregations["seed"] = "count"
     return (
         df.groupby("protocol_id", as_index=False)
-        .agg({metric: "mean" for metric in metrics} | {"seed": "count"})
+        .agg(aggregations)
         .rename(columns={"seed": "replicates"})
     )
