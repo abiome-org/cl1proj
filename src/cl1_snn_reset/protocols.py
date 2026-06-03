@@ -35,7 +35,7 @@ class ResetProtocol:
         return (
             abs(float(self.current_uA))
             * (float(self.pulse_width_us) * 1e-6)
-            * max(1, total_pulses)
+            * max(0, total_pulses)
             * 2.0
         )
 

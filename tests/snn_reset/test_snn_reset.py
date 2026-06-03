@@ -10,6 +10,7 @@ from cl1_snn_reset import (
     protocol_events,
     run_trial,
     savings_score,
+    weight_erasure_score,
 )
 
 
@@ -101,3 +102,26 @@ def test_train_reset_relearn_trial_returns_required_metrics():
 def test_savings_score_handles_initial_criterion_edge_case():
     assert savings_score(0, 0) == 0.0
     assert savings_score(0, 12) == -1.0
+
+
+def test_weight_erasure_score_uses_trained_delta_norm():
+    w0 = np.array([0.0, 0.0])
+    wtrained = np.array([3.0, 4.0])
+
+    assert np.isclose(weight_erasure_score(w0, wtrained, w0), 1.0)
+    assert np.isclose(weight_erasure_score(w0, wtrained, wtrained), 0.0)
+    assert np.isclose(weight_erasure_score(w0, wtrained, np.array([1.5, 2.0])), 0.5)
+    assert np.isclose(weight_erasure_score(w0, wtrained, np.array([6.0, 8.0])), -1.0)
+
+
+def test_reset_protocol_has_zero_charge_for_zero_pulses():
+    protocol = ResetProtocol(
+        beta=0,
+        duration_s=1.0,
+        current_uA=2.0,
+        pulse_width_us=160,
+        schedule="static",
+        spatial_mode="independent",
+    )
+
+    assert protocol.total_charge_uC(0) == 0.0
