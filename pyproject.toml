@@ -30,6 +30,7 @@ dependencies = [
     "scikit-learn",
     "PyYAML",
     "seaborn",
+    "pyarrow",
     "websockets",
     "ipykernel"
 ]
