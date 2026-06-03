@@ -46,7 +46,7 @@ need.
 
 ## Trial Loop
 
-Each replicate follows a train-reset-relearn sequence:
+Each trial follows a train-reset-relearn sequence:
 
 1. Build a naive 2D culture and record baseline weights and activity.
 2. Train an electrode-to-electrode conditioned response task.
@@ -94,19 +94,8 @@ high-health protocol can be different candidates.
 
 ## Current 10k-Neuron Result
 
-The calibrated full grid was run on an Apple M4 Max Mac with 64 GiB unified
-memory:
-
-- Network size: 10,000 neurons, 64-channel MEA.
-- Grid: 540 protocols x 3 seeds = 1,620 train-reset-relearn jobs.
-- Parallelism: 8 process workers on a 16-logical-CPU machine.
-- Primary runtime: 7,103.18 seconds, or about 1 hour 58 minutes.
-- Throughput: 0.2281 jobs/second.
-- Independent temp replication runtime: 7,083.15 seconds.
-
-The aggregate outputs replicated exactly: `summary.csv`, `ranked.csv`, and
-`pareto.csv` are identical between the primary run and the neutral temp
-replication.  The only raw-table differences are per-job wall-clock timings.
+The calibrated full grid screened 540 reset protocols across three seeds on a
+10,000-neuron, 64-channel simulated culture.
 
 The scientific result is negative for true reset in this configuration.  Every
 protocol had negative weight erasure, meaning post-reset weights were farther
@@ -129,23 +118,20 @@ restore the simulated culture to a naive weight state.  It is still useful:
 behavioral suppression and low trace AUC alone would have overstated reset
 quality without the hidden-weight and savings checks.
 
-Full run notes are in
-`docs/snn_reset/full_grid_10k_calibrated_20260602.md`.
+Full run notes are in `docs/snn_reset/full_grid_10k_calibrated_20260602.md`.
 
 ## Running
 
 Run the calibrated full 10k-neuron grid:
 
 ```bash
-MPLCONFIGDIR=/private/tmp/mpl-cache XDG_CACHE_HOME=/private/tmp/xdg-cache \
-  .venv-uv/bin/python experiments/snn_reset/full_grid_search.py
+.venv-uv/bin/python experiments/snn_reset/full_grid_search.py
 ```
 
 Run the smaller benchmark:
 
 ```bash
-MPLCONFIGDIR=/private/tmp/mpl-cache XDG_CACHE_HOME=/private/tmp/xdg-cache \
-  .venv-uv/bin/python experiments/snn_reset/benchmarks/benchmark_snn_reset.py
+.venv-uv/bin/python experiments/snn_reset/benchmarks/benchmark_snn_reset.py
 ```
 
 Run focused reset and bridge tests:
