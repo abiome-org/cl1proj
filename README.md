@@ -92,31 +92,7 @@ The ranking is a screen, not a proof.  The Pareto front is more important than a
 single score because a low-cost protocol, a strong erasure protocol, and a
 high-health protocol can be different candidates.
 
-## Current 10k-Neuron Result
-
-The calibrated full grid screened 540 reset protocols across three seeds on a
-10,000-neuron, 64-channel simulated culture.
-
-The scientific result is negative for true reset in this configuration.  Every
-protocol had negative weight erasure, meaning post-reset weights were farther
-from the naive state than the trained weights were.  The best-ranked protocols
-are therefore the least damaging/least costly candidates, not successful resets.
-The top Pareto candidate was:
-
-```text
-b2_epoch_pause_independent_0.75s_0.8uA
-weight_erasure=-0.4373
-residual_performance=0.5000
-savings=-1.3889
-trace_auc=0.5307
-health=0.0996
-energy_cost=0.0048
-```
-
-This argues that the current fixed-sign STDP reset actuator is not yet enough to
-restore the simulated culture to a naive weight state.  It is still useful:
-behavioral suppression and low trace AUC alone would have overstated reset
-quality without the hidden-weight and savings checks.
+## Results
 
 Full run notes are in `docs/snn_reset/full_grid_10k_calibrated_20260602.md`.
 
