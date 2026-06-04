@@ -1,0 +1,148 @@
+{
+  "best_linear_predicted_reset_loss": 5.968456529253489e-07,
+  "controllable_fraction": 0.0,
+  "group_reachability": {
+    "channel_path": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0
+    },
+    "cost_context": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0
+    },
+    "criticality": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0
+    },
+    "evoked_activity": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0
+    },
+    "health": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0
+    },
+    "privileged_weight_projection": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.045087928662867365,
+      "unreachable_residual_norm": 0.045087928662867365
+    },
+    "readout": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0
+    },
+    "task_path": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.021753932645058083,
+      "unreachable_residual_norm": 0.021753932645058083
+    },
+    "weight_histogram": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0
+    }
+  },
+  "reachable_norm": 0.0,
+  "recommendation": "Outcome B risk: actuator grammar appears unable to reach the anti-trace direction.",
+  "target_norm": 0.050061511130144086,
+  "top_aligned_dimensions": [
+    {
+      "dimension": "training_response_probability",
+      "score": 0.0
+    },
+    {
+      "dimension": "rough_energy_uC",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:probe_triggered",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:coordinated_reset",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:low_frequency_depotentiation",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:colored_noise",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:actuator_positive_control",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:task_input_drive",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:rest",
+      "score": 0.0
+    },
+    {
+      "dimension": "total_duration_s",
+      "score": 0.0
+    }
+  ],
+  "top_anti_aligned_dimensions": [
+    {
+      "dimension": "family:anti_stdp_pairing",
+      "score": 0.0
+    },
+    {
+      "dimension": "duration_s",
+      "score": 0.0
+    },
+    {
+      "dimension": "rest_fraction",
+      "score": 0.0
+    },
+    {
+      "dimension": "electrode_entropy",
+      "score": 0.0
+    },
+    {
+      "dimension": "electrode_coverage",
+      "score": 0.0
+    },
+    {
+      "dimension": "colored_event_rate_hz",
+      "score": 0.0
+    },
+    {
+      "dimension": "colored_beta",
+      "score": 0.0
+    },
+    {
+      "dimension": "low_frequency_hz",
+      "score": 0.0
+    },
+    {
+      "dimension": "anti_pair_delay_ms",
+      "score": 0.0
+    },
+    {
+      "dimension": "pulse_width_us",
+      "score": 0.0
+    }
+  ],
+  "unreachable_residual_norm": 0.050061511130144086
+}

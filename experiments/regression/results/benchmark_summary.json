@@ -1,0 +1,136 @@
+{
+  "machine": {
+    "platform": "macOS-26.5-arm64-arm-64bit",
+    "processor": "arm",
+    "python": "3.12.11",
+    "cpu_count": 16
+  },
+  "network": [
+    {
+      "neurons": 1000,
+      "synapses": 31972,
+      "build_s": 0.05222349998075515,
+      "run_s": 0.02331958300783299,
+      "simulated_s": 1.0,
+      "x_realtime": 42.88241344899274,
+      "spikes": 21,
+      "pulses": 44
+    },
+    {
+      "neurons": 5000,
+      "synapses": 159971,
+      "build_s": 0.261840499995742,
+      "run_s": 0.10030404198914766,
+      "simulated_s": 1.0,
+      "x_realtime": 9.969687962407281,
+      "spikes": 90,
+      "pulses": 39
+    },
+    {
+      "neurons": 10000,
+      "synapses": 319974,
+      "build_s": 0.5382850000169128,
+      "run_s": 0.24742058402625844,
+      "simulated_s": 1.0,
+      "x_realtime": 4.041700911569554,
+      "spikes": 196,
+      "pulses": 46
+    }
+  ],
+  "sweep_single_worker": {
+    "workers": 1,
+    "jobs": 8,
+    "elapsed_s": 1.0070002500142436,
+    "jobs_per_s": 7.944387302671318
+  },
+  "sweep_multi_worker": {
+    "workers": 4,
+    "jobs": 8,
+    "elapsed_s": 3.1923799169890117,
+    "jobs_per_s": 2.5059673998780942
+  },
+  "parallel_speedup": 0.31543872477559814,
+  "top_protocols": [
+    {
+      "protocol_id": "b-1_static_independent_0.25s_1uA",
+      "beta": -1.0,
+      "schedule": "static",
+      "spatial_mode": "independent",
+      "duration_s": 0.25,
+      "current_uA": 1.0,
+      "pulse_width_us": 160,
+      "total_pulses": 9,
+      "weight_erasure": -0.39921035789745873,
+      "residual_performance": 0.0,
+      "savings": 6.250000517127319e-11,
+      "trace_auc_proxy": 0.7847511188057594,
+      "criticality_distance": 0.6176851653064972,
+      "health": 0.27277258101279206,
+      "energy_cost": 0.0030399999999999997,
+      "path_erasure": 0.30044833010968797,
+      "replicates": 2,
+      "reset_score": -0.5602950283007145
+    },
+    {
+      "protocol_id": "b0_static_correlated_0.25s_1.4uA",
+      "beta": 0.0,
+      "schedule": "static",
+      "spatial_mode": "correlated",
+      "duration_s": 0.25,
+      "current_uA": 1.4,
+      "pulse_width_us": 160,
+      "total_pulses": 36,
+      "weight_erasure": -0.39921035789745873,
+      "residual_performance": 0.0,
+      "savings": 6.250000517127319e-11,
+      "trace_auc_proxy": 0.7847511188057594,
+      "criticality_distance": 0.6176851653064972,
+      "health": 0.27277258101279206,
+      "energy_cost": 0.014336,
+      "path_erasure": 0.30044833010968797,
+      "replicates": 2,
+      "reset_score": -0.5608598283007145
+    },
+    {
+      "protocol_id": "b2_alternating_blue_red_phase_shifted_0.25s_2uA",
+      "beta": 2.0,
+      "schedule": "alternating_blue_red",
+      "spatial_mode": "phase_shifted",
+      "duration_s": 0.25,
+      "current_uA": 2.0,
+      "pulse_width_us": 160,
+      "total_pulses": 52,
+      "weight_erasure": -0.39921035789745873,
+      "residual_performance": 0.0,
+      "savings": 6.250000517127319e-11,
+      "trace_auc_proxy": 0.7847511188057594,
+      "criticality_distance": 0.6176851653064972,
+      "health": 0.27277258101279206,
+      "energy_cost": 0.028159999999999998,
+      "path_erasure": 0.30044833010968797,
+      "replicates": 2,
+      "reset_score": -0.5615510283007145
+    },
+    {
+      "protocol_id": "b1_epoch_pause_shared_0.25s_1.4uA",
+      "beta": 1.0,
+      "schedule": "epoch_pause",
+      "spatial_mode": "shared",
+      "duration_s": 0.25,
+      "current_uA": 1.4,
+      "pulse_width_us": 160,
+      "total_pulses": 81,
+      "weight_erasure": -0.39921035789745873,
+      "residual_performance": 0.0,
+      "savings": 6.250000517127319e-11,
+      "trace_auc_proxy": 0.7847511188057594,
+      "criticality_distance": 0.6176851653064972,
+      "health": 0.27277258101279206,
+      "energy_cost": 0.029344000000000002,
+      "path_erasure": 0.30044833010968797,
+      "replicates": 2,
+      "reset_score": -0.5616102283007145
+    }
+  ],
+  "output_csv": "/Users/j8ck/Documents/cl1proj/experiments/regression/results/benchmark_sweep.csv"
+}

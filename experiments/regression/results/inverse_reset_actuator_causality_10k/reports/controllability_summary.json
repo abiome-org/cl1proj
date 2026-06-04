@@ -1,0 +1,148 @@
+{
+  "best_linear_predicted_reset_loss": 0.0005730371522322732,
+  "controllable_fraction": 0.02796434613666694,
+  "group_reachability": {
+    "channel_path": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 4.8710986679602455e-05,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 4.8710986679602455e-05
+    },
+    "cost_context": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0
+    },
+    "criticality": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0010861620915213752,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0010861620915213752
+    },
+    "evoked_activity": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.043309941518428235,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.043309941518428235
+    },
+    "health": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 0.0001594001944272921,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 0.0001594001944272921
+    },
+    "privileged_weight_projection": {
+      "controllable_fraction": 0.00045001201903879546,
+      "reachable_norm": 8.895988860546888e-05,
+      "target_norm": 0.19768336142550821,
+      "unreachable_residual_norm": 0.19767500256218984
+    },
+    "readout": {
+      "controllable_fraction": 0.0029342530163653326,
+      "reachable_norm": 0.004528030246080021,
+      "target_norm": 1.54316284956534,
+      "unreachable_residual_norm": 1.5419402996889824
+    },
+    "task_path": {
+      "controllable_fraction": 9.408519255777316e-05,
+      "reachable_norm": 7.280132816645326e-06,
+      "target_norm": 0.07737809339312293,
+      "unreachable_residual_norm": 0.0773817663994123
+    },
+    "weight_histogram": {
+      "controllable_fraction": 0.0,
+      "reachable_norm": 1.780851446575207e-05,
+      "target_norm": 0.0,
+      "unreachable_residual_norm": 1.780851446575207e-05
+    }
+  },
+  "reachable_norm": 0.043559957593134274,
+  "recommendation": "Outcome B risk: actuator grammar appears unable to reach the anti-trace direction.",
+  "target_norm": 1.5576962672486134,
+  "top_aligned_dimensions": [
+    {
+      "dimension": "family:rest",
+      "score": 12.493312544133028
+    },
+    {
+      "dimension": "rest_fraction",
+      "score": 3.1939079913579915
+    },
+    {
+      "dimension": "family:anti_stdp_pairing",
+      "score": 0.0
+    },
+    {
+      "dimension": "duration_s",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:probe_triggered",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:coordinated_reset",
+      "score": 0.0
+    },
+    {
+      "dimension": "colored_event_rate_hz",
+      "score": 0.0
+    },
+    {
+      "dimension": "colored_beta",
+      "score": 0.0
+    },
+    {
+      "dimension": "anti_pair_delay_ms",
+      "score": 0.0
+    },
+    {
+      "dimension": "family:low_frequency_depotentiation",
+      "score": 0.0
+    }
+  ],
+  "top_anti_aligned_dimensions": [
+    {
+      "dimension": "family:actuator_positive_control",
+      "score": -11.083233493524258
+    },
+    {
+      "dimension": "mean_amplitude_uA",
+      "score": -3.992384989130653
+    },
+    {
+      "dimension": "max_amplitude_uA",
+      "score": -3.9923849891306507
+    },
+    {
+      "dimension": "electrode_entropy",
+      "score": -3.1939079913051955
+    },
+    {
+      "dimension": "electrode_coverage",
+      "score": -3.1939079913051827
+    },
+    {
+      "dimension": "rough_energy_uC",
+      "score": -2.16469404169764
+    },
+    {
+      "dimension": "total_duration_s",
+      "score": -0.8162328898141806
+    },
+    {
+      "dimension": "energy_cost",
+      "score": -0.6238101545598507
+    },
+    {
+      "dimension": "training_response_probability",
+      "score": -0.42530544613005367
+    },
+    {
+      "dimension": "block_count",
+      "score": -0.40811644488068083
+    }
+  ],
+  "unreachable_residual_norm": 1.5570870852636176
+}

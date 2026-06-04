@@ -1,0 +1,5 @@
+protocol_id,program_family,duration_s,energy_cost,predicted_loss,predicted_task_erasure,predicted_health_penalty,model_uncertainty
+optimized_r0_00003_rest,rest,0.2,0.0,0.001967367216481269,0.0,0.0,0.0
+optimized_r0_00009_rest,rest,0.12,0.0,0.001967367216481269,0.0,0.0,0.0
+optimized_r1_00000_rest,rest,0.19836504217394946,0.0,0.001967367216481269,0.0,0.0,0.0
+optimized_r1_00001_rest,rest,0.13482796151621218,0.0,0.001967367216481269,0.0,0.0,0.0

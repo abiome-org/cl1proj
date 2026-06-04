@@ -1,8 +1,6 @@
 /.venv-*/
 /dist/
-/experiments/**/results/
 *_benchmark_results.csv
 **/.pytest_cache/
 **/__pycache__/
-/docs/html
 .DS_Store

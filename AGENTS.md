@@ -7,6 +7,7 @@
 - Apply strict structural code-quality refactors (centralize duplicated logic, remove dead API fields, avoid spaghetti branching) and deslop on touched files; avoid changelog-style comments.
 - Create git commits only when explicitly requested; use Conventional Commits message format.
 - Do not add new markdown documentation files unless the user asks; report outcomes in chat instead.
+- Never gitignore experiment results, generated reports, or other documentation artifacts; track them or explicitly rewrite them when validity is in question.
 
 ## Learned Workspace Facts
 
@@ -23,8 +24,8 @@
 - **`src/`** is the installable library only: `cl1_snn_reset`, `cl1_clsdk_bridge`, vendored `cl`. No experiment entrypoints, no result CSVs, no grid CLIs.
 - **`experiments/`** holds runnable studies. Each subdirectory has a single `README.md` (scripts + results layout). Do not edit `src/` when adding or running experiments.
 - **Imports:** experiments use `import cl1_snn_reset` / `cl1_clsdk_bridge` public APIs (`__init__` exports and documented subpackages such as `cl1_snn_reset.inverse_control`). Do not import private `_` symbols or reach into internal modules when a public export exists.
-- **`experiments/regression/`** — `smoke.py` and `benchmark.py`; outputs under `experiments/regression/results/`; suitable for quick gates.
-- **`experiments/snn_reset/`** — `full_grid_search.py`, `control_checks.py`, `learned_inverse_reset.py`, YAML configs; outputs under `experiments/snn_reset/results/`.
+- **`experiments/regression/`** — `smoke.py`, `benchmark.py`, `learned_inverse_reset.py`, inverse-reset YAML configs; outputs under `experiments/regression/results/`; suitable for quick checks and controllability regressions.
+- **`experiments/snn_reset/`** — `full_grid_search.py`, `control_checks.py`; outputs under `experiments/snn_reset/results/`.
 - **`tests/`** — fast pytest for library and bridge; may use internal modules for white-box tests.
 
 ## Library API (cl1_snn_reset)

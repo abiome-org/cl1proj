@@ -1,0 +1,548 @@
+{
+  "argv": [
+    "experiments/regression/learned_inverse_reset.py",
+    "--config",
+    "experiments/regression/configs/inverse_reset_actuator_causality.yaml",
+    "--mode",
+    "full",
+    "--run-id",
+    "inverse_reset_actuator_causality_10k",
+    "--output-dir",
+    "/Users/j8ck/Documents/cl1proj/experiments/regression/results/inverse_reset_actuator_causality_10k"
+  ],
+  "config": {
+    "constraints": {
+      "allowed_electrodes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63
+      ],
+      "max_amplitude_uA": 0.8,
+      "max_energy_cost": 6.0,
+      "max_events_per_electrode": 300,
+      "max_pulse_width_us": 200,
+      "max_total_duration_s": 0.5,
+      "min_amplitude_uA": 0.0,
+      "min_cooldown_ms_per_electrode": 2.0,
+      "min_inter_pulse_interval_ms": 2.0,
+      "require_charge_balanced": true
+    },
+    "model": {
+      "max_interaction_control_features": 12,
+      "max_interaction_state_features": 12,
+      "max_state_features": 32,
+      "regularization": {
+        "ridge_alpha": [
+          0.1,
+          1.0
+        ]
+      }
+    },
+    "network": {
+      "backend": "numpy",
+      "background_noise_mv": 1.4,
+      "build_workers": 1,
+      "local_candidate_multiplier": 6,
+      "max_out_degree": 96,
+      "mean_out_degree": 64,
+      "n_electrodes": 64,
+      "n_neurons": 10000,
+      "spontaneous_rate_hz": 0.12,
+      "stim_gain_mv_per_uA": 5.5
+    },
+    "optimizer": {
+      "candidates_per_state": 4,
+      "max_evaluations": 32,
+      "type": "random"
+    },
+    "run": {
+      "name": "inverse_reset_actuator_causality",
+      "output_dir": "experiments/regression/results",
+      "random_seed": 17,
+      "warmup_s": 0.0
+    },
+    "seeds": {
+      "heldout": [
+        1,
+        3,
+        5
+      ],
+      "train": [
+        1,
+        3,
+        5
+      ]
+    },
+    "state": {
+      "include_observable": true,
+      "include_privileged": true,
+      "readout_window_s": 0.5,
+      "weight_hist_bins": 16,
+      "weight_projection_dim": 32
+    },
+    "stim_sampling": {
+      "amplitude_uA": [
+        0.8
+      ],
+      "delays_ms": [
+        5
+      ],
+      "duration_s": [
+        0.5
+      ],
+      "include_blocks": [
+        "actuator_positive_control",
+        "rest_control"
+      ],
+      "positive_control_frequency_hz": [
+        500.0
+      ],
+      "programs_per_trained_state": 6
+    },
+    "target": {
+      "mode": "trace_removed"
+    },
+    "task": {
+      "criterion": 0.65,
+      "eval_interval_trials": 4,
+      "eval_trials": 4,
+      "input_channel": 8,
+      "inter_trial_ms": 70.0,
+      "max_train_trials": 40,
+      "target_channel": 9
+    },
+    "validation": {
+      "candidate_limit": 2
+    }
+  },
+  "config_sha256": "5c4a2b6be51419577a9dd71652ec1722b05d24fb01e37672fd16253f678c1f7f",
+  "constraints": {
+    "allowed_electrodes": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "max_amplitude_uA": 0.8,
+    "max_energy_cost": 6.0,
+    "max_events_per_electrode": 300,
+    "max_pulse_width_us": 200,
+    "max_total_duration_s": 0.5,
+    "min_amplitude_uA": 0.0,
+    "min_cooldown_ms_per_electrode": 2.0,
+    "min_inter_pulse_interval_ms": 2.0,
+    "require_charge_balanced": true
+  },
+  "controllability": {
+    "best_linear_predicted_reset_loss": 0.0005730371522322732,
+    "controllable_fraction": 0.02796434613666694,
+    "group_reachability": {
+      "channel_path": {
+        "controllable_fraction": 0.0,
+        "reachable_norm": 4.8710986679602455e-05,
+        "target_norm": 0.0,
+        "unreachable_residual_norm": 4.8710986679602455e-05
+      },
+      "cost_context": {
+        "controllable_fraction": 0.0,
+        "reachable_norm": 0.0,
+        "target_norm": 0.0,
+        "unreachable_residual_norm": 0.0
+      },
+      "criticality": {
+        "controllable_fraction": 0.0,
+        "reachable_norm": 0.0010861620915213752,
+        "target_norm": 0.0,
+        "unreachable_residual_norm": 0.0010861620915213752
+      },
+      "evoked_activity": {
+        "controllable_fraction": 0.0,
+        "reachable_norm": 0.043309941518428235,
+        "target_norm": 0.0,
+        "unreachable_residual_norm": 0.043309941518428235
+      },
+      "health": {
+        "controllable_fraction": 0.0,
+        "reachable_norm": 0.0001594001944272921,
+        "target_norm": 0.0,
+        "unreachable_residual_norm": 0.0001594001944272921
+      },
+      "privileged_weight_projection": {
+        "controllable_fraction": 0.00045001201903879546,
+        "reachable_norm": 8.895988860546888e-05,
+        "target_norm": 0.19768336142550821,
+        "unreachable_residual_norm": 0.19767500256218984
+      },
+      "readout": {
+        "controllable_fraction": 0.0029342530163653326,
+        "reachable_norm": 0.004528030246080021,
+        "target_norm": 1.54316284956534,
+        "unreachable_residual_norm": 1.5419402996889824
+      },
+      "task_path": {
+        "controllable_fraction": 9.408519255777316e-05,
+        "reachable_norm": 7.280132816645326e-06,
+        "target_norm": 0.07737809339312293,
+        "unreachable_residual_norm": 0.0773817663994123
+      },
+      "weight_histogram": {
+        "controllable_fraction": 0.0,
+        "reachable_norm": 1.780851446575207e-05,
+        "target_norm": 0.0,
+        "unreachable_residual_norm": 1.780851446575207e-05
+      }
+    },
+    "reachable_norm": 0.043559957593134274,
+    "recommendation": "Outcome B risk: actuator grammar appears unable to reach the anti-trace direction.",
+    "target_norm": 1.5576962672486134,
+    "top_aligned_dimensions": [
+      {
+        "dimension": "family:rest",
+        "score": 12.493312544133028
+      },
+      {
+        "dimension": "rest_fraction",
+        "score": 3.1939079913579915
+      },
+      {
+        "dimension": "family:anti_stdp_pairing",
+        "score": 0.0
+      },
+      {
+        "dimension": "duration_s",
+        "score": 0.0
+      },
+      {
+        "dimension": "family:probe_triggered",
+        "score": 0.0
+      },
+      {
+        "dimension": "family:coordinated_reset",
+        "score": 0.0
+      },
+      {
+        "dimension": "colored_event_rate_hz",
+        "score": 0.0
+      },
+      {
+        "dimension": "colored_beta",
+        "score": 0.0
+      },
+      {
+        "dimension": "anti_pair_delay_ms",
+        "score": 0.0
+      },
+      {
+        "dimension": "family:low_frequency_depotentiation",
+        "score": 0.0
+      }
+    ],
+    "top_anti_aligned_dimensions": [
+      {
+        "dimension": "family:actuator_positive_control",
+        "score": -11.083233493524258
+      },
+      {
+        "dimension": "mean_amplitude_uA",
+        "score": -3.992384989130653
+      },
+      {
+        "dimension": "max_amplitude_uA",
+        "score": -3.9923849891306507
+      },
+      {
+        "dimension": "electrode_entropy",
+        "score": -3.1939079913051955
+      },
+      {
+        "dimension": "electrode_coverage",
+        "score": -3.1939079913051827
+      },
+      {
+        "dimension": "rough_energy_uC",
+        "score": -2.16469404169764
+      },
+      {
+        "dimension": "total_duration_s",
+        "score": -0.8162328898141806
+      },
+      {
+        "dimension": "energy_cost",
+        "score": -0.6238101545598507
+      },
+      {
+        "dimension": "training_response_probability",
+        "score": -0.42530544613005367
+      },
+      {
+        "dimension": "block_count",
+        "score": -0.40811644488068083
+      }
+    ],
+    "unreachable_residual_norm": 1.5570870852636176
+  },
+  "dataset_examples": 18,
+  "dependencies": {
+    "pip_freeze": [],
+    "pip_freeze_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "environment": {},
+  "experiment_config": {
+    "culture": {
+      "backend": "numpy",
+      "background_noise_mv": 1.4,
+      "brian2_codegen_target": "numpy",
+      "build_workers": 1,
+      "connection_length_mm": 0.25,
+      "dt_ms": 1.0,
+      "electrode_radius_mm": 0.12,
+      "excitatory_fraction": 0.8,
+      "excitatory_weight_range": [
+        0.08,
+        0.32
+      ],
+      "field_size_mm": 3.0,
+      "homeostasis_interval_ms": 100.0,
+      "homeostasis_rate": 0.012,
+      "inhibitory_weight_range": [
+        -0.55,
+        -0.12
+      ],
+      "local_candidate_multiplier": 6,
+      "long_range_prob": 0.02,
+      "max_out_degree": 96,
+      "mean_out_degree": 64,
+      "membrane_tau_ms": 20.0,
+      "n_electrodes": 64,
+      "n_neurons": 10000,
+      "record_kernel_gamma": 1.7,
+      "refractory_ms": 3.0,
+      "spontaneous_rate_hz": 0.12,
+      "stdp_a_minus": 0.014,
+      "stdp_a_plus": 0.012,
+      "stdp_tau_ms": 35.0,
+      "stim_gain_mv_per_uA": 5.5,
+      "stim_kernel_gamma": 1.35,
+      "stim_tau_ms": 2.0,
+      "synapse_tau_ms": 6.0,
+      "synaptic_gain_mv": 7.0,
+      "target_rate_hz": 2.5,
+      "v_reset_mv": -68.0,
+      "v_rest_mv": -65.0,
+      "v_threshold_mv": -50.0,
+      "w_max": 0.9,
+      "w_min": -0.9
+    },
+    "keep_snapshots": false,
+    "readout_window_s": 0.5,
+    "seed": 17,
+    "task": {
+      "criterion_response_probability": 0.65,
+      "eval_interval_trials": 4,
+      "eval_trials": 4,
+      "input_channels": [
+        8
+      ],
+      "input_current_uA": 2.2,
+      "inter_trial_ms": 70.0,
+      "max_trials": 40,
+      "pair_delay_ms": 12.0,
+      "pulse_width_us": 160,
+      "response_window_ms": [
+        4.0,
+        35.0
+      ],
+      "target_channels": [
+        9
+      ],
+      "target_current_uA": 2.0
+    },
+    "warmup_s": 0.0
+  },
+  "finished_at_utc": "2026-06-04T03:35:20.727381+00:00",
+  "git": {
+    "commit": "0b0778699e801eff68fd1a6ba0408268e335a7dc",
+    "diff_sha256": "10b0d516ec5e69e02c24f0b1b872ef1328f1d22fe26547007415330d96516c81",
+    "dirty": true,
+    "status_short": "M experiments/regression/configs/inverse_reset_mvp.yaml\n M experiments/snn_reset/control_checks.py\n M experiments/snn_reset/full_grid_search.py\n M experiments/regression/learned_inverse_reset.py\n M pyproject.toml\n M src/cl1_snn_reset/analysis.py\n M src/cl1_snn_reset/artifacts.py\n M src/cl1_snn_reset/experiment.py\n M src/cl1_snn_reset/inverse_control/forward_models.py\n M src/cl1_snn_reset/inverse_control/reporting.py\n M src/cl1_snn_reset/inverse_control/validation.py\n M src/cl1_snn_reset/metrics.py\n M src/cl1_snn_reset/sweep.py\n M test-dist.sh\n M tests/snn_reset/test_snn_reset.py"
+  },
+  "git_commit": "0b0778699e801eff68fd1a6ba0408268e335a7dc",
+  "machine": {
+    "platform": "macOS-26.5-arm64-arm-64bit",
+    "processor": "arm",
+    "python": "3.12.11"
+  },
+  "mode": "full",
+  "model_diagnostics": {
+    "best_alpha": 0.1,
+    "controllability_by_seed": [
+      {
+        "controllable_fraction": 0.02796434613666694,
+        "example_index": 0,
+        "reachable_norm": 0.043559957593134274,
+        "seed": 1,
+        "target_norm": 1.5576962672486134,
+        "unreachable_residual_norm": 1.5570870852636176
+      },
+      {
+        "controllable_fraction": 0.03679755940434139,
+        "example_index": 6,
+        "reachable_norm": 0.05706970868013207,
+        "seed": 3,
+        "target_norm": 1.5509101582807412,
+        "unreachable_residual_norm": 1.5498597741286935
+      },
+      {
+        "controllable_fraction": 0.01143623184820002,
+        "example_index": 12,
+        "reachable_norm": 0.022004788026035876,
+        "seed": 5,
+        "target_norm": 1.9241292340098255,
+        "unreachable_residual_norm": 1.9240034039666267
+      }
+    ],
+    "mean_cosine_similarity": 0.5555555555257812,
+    "mean_r2": 0.9999995554569978,
+    "mse": 0.0009765270077530121,
+    "null_effect_norm_mean": 5483.700981873799,
+    "r2_by_feature_group": {
+      "channel_path": 0.9999995500794385,
+      "cost_context": 1.0,
+      "criticality": 0.99999983318212,
+      "evoked_activity": 0.9999998184490044,
+      "health": 0.9999994628649338,
+      "privileged_weight_projection": 0.9999994742141991,
+      "readout": 0.9999997317199764,
+      "task_path": 0.9999995271616238,
+      "weight_histogram": 0.9999998605932326
+    },
+    "rmse": 0.031249432118888372,
+    "target_direction_accuracy": 0.5555555555555556,
+    "test_rms": 0.0065354105115754116,
+    "validation_rms": 0.03419092100709121
+  },
+  "output_dir": "/Users/j8ck/Documents/cl1proj/experiments/regression/results/inverse_reset_actuator_causality_10k",
+  "run_id": "inverse_reset_actuator_causality_10k",
+  "started_at_utc": "2026-06-04T03:33:43.795763+00:00"
+}
