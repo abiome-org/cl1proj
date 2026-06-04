@@ -15,7 +15,7 @@ runs.
 
 It is **library code**. Import it through the public API
 (`from cl1_snn_reset.inverse_control import ...`); the runnable driver and its
-YAML configs live in `experiments/regression/learned_inverse_reset.py`, where it
+YAML configs live in `experiments/regression1/learned_inverse_reset.py`, where it
 also serves as a controllability regression gate.
 
 ## The pipeline
@@ -148,13 +148,13 @@ into internal modules:
 ## Running it
 
 ```bash
-python experiments/regression/learned_inverse_reset.py \
-    --config experiments/regression/configs/inverse_reset_smoke.yaml
+python experiments/regression1/learned_inverse_reset.py \
+    --config experiments/regression1/configs/inverse_reset_smoke.yaml
 ```
 
-Configs of increasing scope live in `experiments/regression/configs/`
+Configs of increasing scope live in `experiments/regression1/configs/`
 (`inverse_reset_smoke.yaml`, `inverse_reset_mvp.yaml`,
 `inverse_reset_controllability.yaml`, `inverse_reset_reachability.yaml`,
 `inverse_reset_actuator_causality.yaml`, `inverse_reset_closed_loop.yaml`).
-Outputs are written under `experiments/regression/results/`. Tests live in
+Outputs are written under `experiments/regression1/results/`. Tests live in
 `tests/snn_reset/inverse_control/`.

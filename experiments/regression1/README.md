@@ -1,9 +1,92 @@
-# Regression experiments
+# Regression experiments (regression1)
 
 Fast checks and the learned inverse-reset controllability pipeline that exercise
 the installable libraries. These scripts only import public APIs from
 `cl1_snn_reset` and `cl1_clsdk_bridge`; they do not modify anything under
 `src/`.
+
+> This directory is `regression1` — a frozen snapshot of the first-generation
+> inverse-reset probes and their committed results. The next round of work
+> (grammar changes, larger datasets, the tuned `mvp` run) is expected to be a
+> large change and should land in a new sibling directory rather than mutating
+> these runs.
+
+## What we learned (inverse-reset runs)
+
+**Bottom line: the learned controller did not achieve a validated reset.** Across
+all three runs, every candidate protocol failed the decisive paired
+test (`beats_no_reset = 0`); none erased the learned task better than doing
+nothing, and none passed the health and generalization criteria. The result is
+negative, consistent with the full-grid and control-check studies under
+`experiments/snn_reset/`.
+
+The committed runs are small diagnostic **probes**, not the tuned reference run.
+Only `smoke_codex`, `actuator_causality_10k`, and `reachability_10k` have results;
+the heavier `mvp` / `controllability` / `closed_loop` presets have not been run
+here (and will likely need outside compute for viable runtime)
+
+| Run | Dataset | Model RMSE / cosine | Controllable fraction | Validation outcome |
+|-----|---------|---------------------|------------------------|--------------------|
+| `smoke_codex` | 24 | 0 / 0 | 0.00 | every family inert (`stimulus_effect_norm = 0`) — CI smoke only |
+| `actuator_causality_10k` | 18 | 0.031 / 0.56 | 0.028 | positive-control moved the net hard but the wrong way |
+| `reachability_10k` | 71 | 0.470 / 0.18 | 0.975 | chosen drive produced zero effect when simulated |
+
+Three distinct failure modes surfaced:
+
+1. **Inert actuator** (smoke) — no sampled stimulation produced causal change
+   beyond no-reset; nothing to steer.
+2. **Causal but destructive** (actuator_causality) — the `actuator_positive_control`
+   family drives the network enormously (`stimulus_effect_norm ≈ 9,900`), but away
+   from task erasure: validated causal erasure was **−209** (it *strengthened* the
+   trace), health collapsed to **0.005**, orthogonal damage **≈ 9,900**. Only
+   ~2.8% of the anti-trace direction is reachable, so the optimizer's safe pick
+   was `rest` (do nothing).
+3. **Overfit reachability** (reachability) — the linear model claimed **97.5%** of
+   the anti-trace direction was reachable, but full-simulator validation flatly
+   contradicted it (all candidates `stimulus_effect_norm = 0`, erasure 0). The
+   0.975 was the model fitting the high-variance readout dimension (poor global
+   fit: RMSE 0.47, cosine 0.18). The report's own diagnosis flips to "Outcome A:
+   actuator appears inert — verify pulse-driven spikes enter STDP."
+
+### Shortfalls
+
+- **No validated erasure.** The only family that strongly moves the network also
+  destroys it; the families that preserve health are inert. No protocol cleared
+  the no-reset baseline.
+- **Tiny datasets.** 18–71 examples; the forward model fits are weak
+  (cosine 0.18–0.56) and over-optimistic where the readout dimension dominates.
+- **Linear controllability is unreliable on its own.** The `reachability` run
+  shows the linear reachability estimate can be a mirage; only the paired
+  full-simulator validation caught it.
+- **Dataset/validation mismatch.** `task_input_drive` showed a causal effect in
+  the dataset (`stimulus_effect_norm ≈ 58`) yet zero under validation, suggesting
+  the optimizer selected variants whose pulses do not actually drive spikes into
+  STDP.
+
+### What did work
+
+- The pipeline runs end to end and produces honest, self-diagnosing reports
+  (Outcome A vs. Outcome B classification, per-family causality, per-group
+  reachability).
+- The **paired no-reset validation is the key guardrail** — it refused to
+  rubber-stamp the optimistic 97.5% reachability claim. The driver hard-fails if
+  this control is disabled.
+
+### Possible next steps
+
+The reports' own "Next Grammar Changes" prescriptions, plus the gaps above:
+
+1. **Verify the actuator path** — confirm pulse-driven spikes actually enter STDP
+   before trusting any model (the dataset-vs-validation mismatch above).
+2. **Expand the stim grammar** toward anti-causal timing and probe-triggered
+   families; raise the positive-control dose while constraining health damage.
+3. **Run the tuned reference preset** (`inverse_reset_mvp.yaml`: 10k neurons,
+   500 programs/state, CMA-ES + ensemble model, 1000 bootstraps) to test whether
+   more data and a better model change the picture.
+4. **Strengthen the forward model** so linear reachability stops overfitting the
+   readout dimension (more data, regularization, or the ensemble model).
+5. Land all of the above in a **new `experiments/regression2` (or similar)**
+   directory, keeping `regression1` as the baseline of record.
 
 ## Scripts
 
@@ -12,15 +95,15 @@ the installable libraries. These scripts only import public APIs from
 | `smoke.py` | One small train-reset-relearn trial plus a 64-channel `ResetSNNAdapter` render |
 | `benchmark.py` | Network build/advance timing and a short protocol×seed sweep with optional parallelism |
 | `learned_inverse_reset.py` | Dataset → forward model → controllability analysis → stim-program optimization → validation |
-| `configs/*.yaml` | Learned inverse-reset run presets (`output_dir` points at `experiments/regression/results`) |
+| `configs/*.yaml` | Learned inverse-reset run presets (`output_dir` points at `experiments/regression1/results`) |
 
 ## Running
 
 ```bash
-.venv-uv/bin/python experiments/regression/smoke.py
-.venv-uv/bin/python experiments/regression/benchmark.py
-.venv-uv/bin/python experiments/regression/learned_inverse_reset.py \
-    --config experiments/regression/configs/inverse_reset_smoke.yaml
+.venv-uv/bin/python experiments/regression1/smoke.py
+.venv-uv/bin/python experiments/regression1/benchmark.py
+.venv-uv/bin/python experiments/regression1/learned_inverse_reset.py \
+    --config experiments/regression1/configs/inverse_reset_smoke.yaml
 ```
 
 Use `benchmark.py --output` to override the sweep CSV path.
@@ -73,7 +156,7 @@ later stage against a cached earlier one.
 ### Presets
 
 All presets share the schema below and point `run.output_dir` at
-`experiments/regression/results`. They differ mainly in scale and the question
+`experiments/regression1/results`. They differ mainly in scale and the question
 they probe:
 
 | Config | Scale / optimizer | Purpose |
@@ -135,7 +218,7 @@ validation/
 
 ## Results
 
-Outputs are written under `experiments/regression/results/` and are tracked in
+Outputs are written under `experiments/regression1/results/` and are tracked in
 git (per the repository rule never to ignore experiment results or generated
 reports):
 

@@ -122,13 +122,13 @@ uv sync   # or pip install -e .
 Regression smoke (quick):
 
 ```bash
-.venv-uv/bin/python experiments/regression/smoke.py
+.venv-uv/bin/python experiments/regression1/smoke.py
 ```
 
 Regression benchmark (timing / short sweep):
 
 ```bash
-.venv-uv/bin/python experiments/regression/benchmark.py
+.venv-uv/bin/python experiments/regression1/benchmark.py
 ```
 
 Calibrated full 10k-neuron protocol grid:

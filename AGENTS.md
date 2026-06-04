@@ -24,7 +24,7 @@
 - **`src/`** is the installable library only: `cl1_snn_reset`, `cl1_clsdk_bridge`, vendored `cl`. No experiment entrypoints, no result CSVs, no grid CLIs.
 - **`experiments/`** holds runnable studies. Each subdirectory has a single `README.md` (scripts + results layout). Do not edit `src/` when adding or running experiments.
 - **Imports:** experiments use `import cl1_snn_reset` / `cl1_clsdk_bridge` public APIs (`__init__` exports and documented subpackages such as `cl1_snn_reset.inverse_control`). Do not import private `_` symbols or reach into internal modules when a public export exists.
-- **`experiments/regression/`** — `smoke.py`, `benchmark.py`, `learned_inverse_reset.py`, inverse-reset YAML configs; outputs under `experiments/regression/results/`; suitable for quick checks and controllability regressions.
+- **`experiments/regression1/`** — `smoke.py`, `benchmark.py`, `learned_inverse_reset.py`, inverse-reset YAML configs; outputs under `experiments/regression1/results/`; suitable for quick checks and controllability regressions.
 - **`experiments/snn_reset/`** — `full_grid_search.py`, `control_checks.py`; outputs under `experiments/snn_reset/results/`.
 - **`tests/`** — fast pytest for library and bridge; may use internal modules for white-box tests.
 

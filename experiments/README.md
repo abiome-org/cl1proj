@@ -5,7 +5,7 @@ describing scripts and where results are written.
 
 | Directory | Role |
 |-----------|------|
-| [`regression/`](regression/) | Fast smoke, benchmark, and learned inverse-reset controllability runs |
+| [`regression1/`](regression1/) | Fast smoke, benchmark, and learned inverse-reset controllability runs |
 | [`snn_reset/`](snn_reset/) | Protocol grids and reset control checks |
 
 ## Rules

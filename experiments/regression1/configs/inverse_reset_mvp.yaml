@@ -1,6 +1,6 @@
 run:
   name: inverse_reset_mvp
-  output_dir: experiments/regression/results
+  output_dir: experiments/regression1/results
   random_seed: 123
   resume: true
   warmup_s: 0.0

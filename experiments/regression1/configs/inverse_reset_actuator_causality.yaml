@@ -1,6 +1,6 @@
 run:
   name: inverse_reset_actuator_causality
-  output_dir: experiments/regression/results
+  output_dir: experiments/regression1/results
   random_seed: 17
   warmup_s: 0.0
 

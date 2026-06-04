@@ -107,7 +107,7 @@ def _build_run_context(args: argparse.Namespace) -> RunContext:
     payload = _load_yaml(args.config)
     _validate_validation_config(payload.get("validation", {}))
     run_id = args.run_id or datetime.now(timezone.utc).strftime("inverse_reset_%Y%m%dT%H%M%SZ")
-    output_root = Path(payload.get("run", {}).get("output_dir", "experiments/regression/results"))
+    output_root = Path(payload.get("run", {}).get("output_dir", "experiments/regression1/results"))
     output_dir = args.output_dir or output_root / run_id
     output_dir.mkdir(parents=True, exist_ok=True)
     experiment_config = _experiment_config(payload)

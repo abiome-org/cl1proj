@@ -43,4 +43,4 @@ The control-checks study is documented in
 ## Regression
 
 Fast smoke, benchmark, and learned inverse-reset controllability entrypoints live
-in `experiments/regression/`.
+in `experiments/regression1/`.

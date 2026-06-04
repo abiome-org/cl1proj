@@ -251,7 +251,7 @@ API only and never modify `src/`:
   (`coarse_protocol_grid` × seeds) at scale via `run_sweep`;
   `control_checks.py` runs reset-vs-no-reset and noise/actuator diagnostics on
   representative protocols.
-- `experiments/regression/smoke.py` runs one small train-reset-relearn trial
+- `experiments/regression1/smoke.py` runs one small train-reset-relearn trial
   (a fast CI gate); `benchmark.py` times network build/advance and a short
   protocol×seed sweep. The learned inverse-reset pipeline
   (`learned_inverse_reset.py` and the `inverse_reset_*.yaml` presets) sits on top
