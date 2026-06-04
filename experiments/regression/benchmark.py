@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import platform
+import sys
 from pathlib import Path
 from time import perf_counter
 
@@ -20,6 +21,8 @@ from cl1_snn_reset import (
     run_sweep,
     summarize_sweep,
 )
+
+RESULTS_DIR = Path(__file__).resolve().parent / "results"
 
 
 def network_benchmark(neurons: int, sim_seconds: float, seed: int, degree: int) -> dict:
@@ -100,15 +103,23 @@ def sweep_benchmark(neurons: int, workers: int, seeds: int, degree: int) -> tupl
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Benchmark the CL SNN reset simulator.")
+    parser = argparse.ArgumentParser(description="Regression benchmark for cl1_snn_reset.")
     parser.add_argument("--network-neurons", type=int, nargs="+", default=[1000, 5000, 10000])
     parser.add_argument("--network-sim-seconds", type=float, default=1.0)
     parser.add_argument("--sweep-neurons", type=int, default=1000)
     parser.add_argument("--degree", type=int, default=32)
     parser.add_argument("--workers", type=int, default=max(1, min(4, os.cpu_count() or 1)))
     parser.add_argument("--seeds", type=int, default=2)
-    parser.add_argument("--output", type=Path, default=Path("snn_reset_benchmark_results.csv"))
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=RESULTS_DIR / "benchmark_sweep.csv",
+        help="Sweep CSV path (default: experiments/regression/results/benchmark_sweep.csv)",
+    )
     args = parser.parse_args()
+
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
 
     network_rows = [
         network_benchmark(neurons, args.network_sim_seconds, seed=10 + index, degree=args.degree)
@@ -133,8 +144,11 @@ def main() -> None:
         "top_protocols": ranked.to_dict(orient="records"),
         "output_csv": str(args.output),
     }
+    summary_path = RESULTS_DIR / "benchmark_summary.json"
+    summary_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(json.dumps(payload, indent=2))
 
 
 if __name__ == "__main__":
     main()
+    sys.exit(0)

@@ -1,8 +1,4 @@
-Forgetting Time Curves on CL1
-
-Goal
-
-Measure how a trained neural task degrades over time, how quickly it returns to normal after retraining, and which noise or perturbation pattern produces the best forgetting/recovery profile.
+Goal: Measure how a trained neural task degrades over time, how quickly it returns to normal after retraining, and which noise or perturbation pattern produces the best forgetting/recovery profile.
 
 
 Basic Experiment Outline
@@ -21,20 +17,20 @@ The score could be decoder accuracy, response separability, reward rate, latency
 
 2. Record baseline state
 
-Open a CL1 session.
+  Open a CL1 session.
 
-Start a recording.
+  Start a recording.
 
-Measure spontaneous activity before training.
+  Measure spontaneous activity before training.
 
-Run a short untrained evaluation block.
+  Run a short untrained evaluation block.
 
 Save:
 
-Baseline firing statistics.
-Baseline task score.
-Baseline burst structure.
-Baseline responsiveness to simple probe stimuli.
+  Baseline firing statistics.
+  Baseline task score.
+  Baseline burst structure.
+  Baseline responsiveness to simple probe stimuli.
 
 
 3. Train the task
@@ -187,21 +183,6 @@ Prefer the method with fast forgetting, low health disruption, and fast recovery
 If the goal is robust retraining:
 
 Prefer the method with the highest final recovered score and steepest recovery slope.
-
-
-11. Guardrails
-
-Do not treat reduced firing alone as forgetting.
-
-Forgetting should mean task-specific degradation while basic culture health remains acceptable.
-
-Track whether the perturbation damages general responsiveness.
-
-Keep stimulation amplitudes, pulse widths, channels, and timing within CL1 safety limits.
-
-Exclude non-stimmable channels.
-
-Record all task events, perturbation events, scores, and condition metadata.
 
 
 Final Output

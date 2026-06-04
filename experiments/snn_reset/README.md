@@ -1,24 +1,50 @@
-# SNN Reset Experiments
+# SNN reset research experiments
 
-This folder contains runnable benchmark and sweep entrypoints for the reset
-simulator.  The main experiment trains a channel-to-channel response, applies a
-colored pulse-reset protocol, then measures hidden weight erasure, behavior,
-savings, trace detectability, health, and stimulation cost.
+Large studies for protocol screening and learned inverse reset. These scripts
+import `cl1_snn_reset` (and reporting helpers from `cl1_snn_reset.inverse_control`
+where noted) and write artifacts under `results/` in this directory. They do not
+modify `src/`.
 
-Run the calibrated full 10k-neuron coarse grid:
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `full_grid_search.py` | Calibrated coarse protocol grid (e.g. 10k neurons, many protocols × seeds) |
+| `control_checks.py` | Reset vs no-reset and noise/actuator diagnostics on representative protocols |
+| `learned_inverse_reset.py` | Dataset → forward model → stim-program optimization → validation |
+| `configs/*.yaml` | Inverse-reset run presets (`output_dir` points at `experiments/snn_reset/results`) |
+
+## Running
 
 ```bash
 .venv-uv/bin/python experiments/snn_reset/full_grid_search.py
+.venv-uv/bin/python experiments/snn_reset/control_checks.py
+.venv-uv/bin/python experiments/snn_reset/learned_inverse_reset.py --config experiments/snn_reset/configs/inverse_reset_smoke.yaml
 ```
 
-The benchmark entrypoint is:
+Use `--resume` on `full_grid_search.py` to continue an interrupted grid into the same
+`results/<run_id>/` folder.
 
-```bash
-.venv-uv/bin/python experiments/snn_reset/benchmarks/benchmark_snn_reset.py
-```
+## Results
 
-Write generated outputs under `experiments/snn_reset/results/`; that directory
-is ignored by Git.
+All generated outputs live in `experiments/snn_reset/results/` (gitignored). A typical
+full-grid run produces:
 
-The completed calibrated 10k grid screened 540 protocols across 3 seeds.  See
-`docs/snn_reset/full_grid_10k_calibrated_20260602.md` for the result summary.
+| File | Contents |
+|------|----------|
+| `metadata.json` | Git commit, machine info, grid definition, job counts |
+| `raw_trials.csv` | One row per protocol×seed trial (resumable) |
+| `summary.csv` | Protocol-level aggregates across seeds |
+| `ranked.csv` | Scalar `reset_score` sort for quick inspection |
+| `pareto.csv` | Nondominated protocols on erasure/health/cost objectives |
+| `report.md` | Human-readable summary of the run |
+
+Inverse-reset runs add `dataset/`, `models/`, `candidates/`, and validation tables
+under a timestamped subdirectory of `results/`.
+
+Published notes for the calibrated 10k grid are in
+`docs/snn_reset/full_grid_10k_calibrated_20260602.md`.
+
+## Regression
+
+Fast smoke and benchmark entrypoints moved to `experiments/regression/`.

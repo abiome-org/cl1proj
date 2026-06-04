@@ -1,16 +1,24 @@
 """
-CL1-like SNN reset simulator.
+CL1-like SNN reset simulator library.
 
-The package exposes a spatial recurrent E/I culture, a first-class MEA
-electrode layer, colored pulse reset protocols, train-reset-relearn experiments,
-trace probes, and parallel sweeps.
+Import this package for culture simulation, train-reset-relearn trials, protocol
+generation, metrics, and batch sweeps. Runnable study scripts live under
+``experiments/`` and must not modify ``src/``.
 """
-from .analysis import pareto_front, plot_pareto_summary, plot_protocol_scatter, rank_protocols
-from .config import CultureConfig, ExperimentConfig, SweepConfig, TaskConfig, load_experiment_config
+from .analysis import pareto_front, rank_protocols
+from .config import CultureConfig, ExperimentConfig, TaskConfig, load_experiment_config
 from .electrodes import ChannelActivity, ElectrodeArray, StimEvent
 from .artifacts import TrialArtifacts
-from .experiment import TrialResult, apply_reset_protocol, record_spontaneous_activity, run_trial
-from .metrics import TrialMetrics, savings_score, weight_erasure_score
+from .experiment import (
+    PhaseSnapshot,
+    TrialResult,
+    apply_reset_protocol,
+    build_trial_artifacts,
+    capture_phase,
+    record_spontaneous_activity,
+    run_trial,
+)
+from .metrics import TrialMetrics, compute_trial_metrics, savings_score, weight_erasure_score
 from .network import Brian2CultureNetwork, CorticalCultureNetwork, NetworkSnapshot, build_network
 from .noise import colored_noise, generate_colored_events
 from .protocols import ResetProtocol, coarse_protocol_grid, protocol_events
@@ -26,9 +34,9 @@ __all__ = [
     "ElectrodeArray",
     "ExperimentConfig",
     "NetworkSnapshot",
+    "PhaseSnapshot",
     "ResetProtocol",
     "StimEvent",
-    "SweepConfig",
     "TaskConfig",
     "TrainingResult",
     "TrialArtifacts",
@@ -36,14 +44,15 @@ __all__ = [
     "TrialResult",
     "apply_reset_protocol",
     "build_network",
+    "build_trial_artifacts",
+    "capture_phase",
     "coarse_protocol_grid",
     "colored_noise",
+    "compute_trial_metrics",
     "evaluate_task",
     "generate_colored_events",
     "load_experiment_config",
     "pareto_front",
-    "plot_pareto_summary",
-    "plot_protocol_scatter",
     "protocol_events",
     "rank_protocols",
     "record_spontaneous_activity",

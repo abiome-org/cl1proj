@@ -96,21 +96,48 @@ high-health protocol can be different candidates.
 
 Full run notes are in `docs/snn_reset/full_grid_10k_calibrated_20260602.md`.
 
+## Repository layout
+
+| Path | Role |
+|------|------|
+| `src/cl1_snn_reset/` | Installable reset simulator library (import in code and notebooks) |
+| `src/cl1_clsdk_bridge/` | CL SDK surrogate twin adapter for the reset culture |
+| `src/cl/` | Vendored CL SDK runtime (minimal changes; compatibility shims only) |
+| `experiments/` | Runnable studies; see `experiments/README.md` |
+| `tests/` | Fast library and bridge unit tests (`pytest`) |
+| `docs/snn_reset/` | Archived run reports |
+
+Experiments consume the library through `import cl1_snn_reset`. They do not
+modify `src/`. Each experiment folder has a `README.md` for scripts and results
+paths.
+
 ## Running
 
-Run the calibrated full 10k-neuron grid:
+Install the package in the project virtualenv (editable install is typical):
+
+```bash
+uv sync   # or pip install -e .
+```
+
+Regression smoke (quick):
+
+```bash
+.venv-uv/bin/python experiments/regression/smoke.py
+```
+
+Regression benchmark (timing / short sweep):
+
+```bash
+.venv-uv/bin/python experiments/regression/benchmark.py
+```
+
+Calibrated full 10k-neuron protocol grid:
 
 ```bash
 .venv-uv/bin/python experiments/snn_reset/full_grid_search.py
 ```
 
-Run the smaller benchmark:
-
-```bash
-.venv-uv/bin/python experiments/snn_reset/benchmarks/benchmark_snn_reset.py
-```
-
-Run focused reset and bridge tests:
+Library and bridge tests:
 
 ```bash
 .venv-uv/bin/python -m pytest tests/snn_reset tests/clsdk_bridge -q
@@ -123,22 +150,6 @@ CL_SDK_SIM_MODE=surrogate
 CL_SDK_TWIN_DYNAMICS=snn_reset
 ```
 
-## Where Things Live
-
-- `src/cl1_snn_reset/`: reset simulator, protocols, metrics, trace probe, and
-  sweep helpers.
-- `src/cl1_clsdk_bridge/`: adapter between the reset simulator and the CL SDK
-  twin runtime.
-- `src/cl/`: CL SDK runtime surface and compatibility imports.
-- `experiments/snn_reset/`: benchmark and full-grid entrypoints.
-- `docs/snn_reset/`: experiment notes and full-grid reports.
-- `tests/snn_reset/` and `tests/clsdk_bridge/`: focused simulator and bridge
-  tests.
-
-Compatibility imports are kept for existing notebooks and SDK call sites:
-`cl.snn_reset` re-exports `cl1_snn_reset`, and `cl.twin.ResetSNNAdapter`
-re-exports the adapter from `cl1_clsdk_bridge`.
-
 ## Prior Art
 
 The experiment connects several related threads: Hopfield and Crick-Mitchison
@@ -147,3 +158,7 @@ learning, criticality recovery, and machine unlearning.  Useful starting points
 include DishBrain, Wagenaar/Pine/Potter culture stimulation, Tass coordinated
 reset, depotentiation studies, SNN unlearning, and noise-driven maintenance of
 critical dynamics.
+
+Compatibility imports are kept for existing notebooks and SDK call sites:
+`cl.snn_reset` re-exports `cl1_snn_reset`, and `cl.twin.ResetSNNAdapter`
+re-exports the adapter from `cl1_clsdk_bridge`.

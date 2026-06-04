@@ -28,7 +28,9 @@ class TrialResult:
 
 
 @dataclass(frozen=True)
-class _PhaseCapture:
+class PhaseSnapshot:
+    """Weights, path strength, and optional activity at one trial phase."""
+
     weights: np.ndarray
     path_strength: float
     activity: ChannelActivity | None = None
@@ -47,23 +49,56 @@ def apply_reset_protocol(net, protocol: ResetProtocol, seed: int) -> tuple[Chann
     return activity, total_pulses
 
 
-def _capture_phase(
+def capture_phase(
     net,
     task: TaskConfig,
     *,
     readout_window_s: float,
-    keep_snapshots: bool,
+    keep_snapshots: bool = False,
     record_activity: bool = True,
-) -> _PhaseCapture:
+) -> PhaseSnapshot:
+    """Record weights, task path strength, and optional spontaneous activity."""
     weights = net.weights_vector()
     path_strength = net.path_strength(task.input_channels, task.target_channels)
     activity = record_spontaneous_activity(net, readout_window_s) if record_activity else None
     snapshot = net.snapshot() if keep_snapshots else None
-    return _PhaseCapture(
+    return PhaseSnapshot(
         weights=weights,
         path_strength=path_strength,
         activity=activity,
         snapshot=snapshot,
+    )
+
+
+def build_trial_artifacts(
+    *,
+    baseline: PhaseSnapshot,
+    trained: PhaseSnapshot,
+    post: PhaseSnapshot,
+    initial: TrainingResult,
+    relearn: TrainingResult,
+    post_behavior: float,
+    protocol: ResetProtocol,
+    seed: int,
+    total_pulses: int,
+) -> TrialArtifacts:
+    """Assemble trial metrics inputs from phase snapshots."""
+    return TrialArtifacts(
+        W0=baseline.weights,
+        Wtrained=trained.weights,
+        Wpost=post.weights,
+        A0=baseline.activity,
+        Apost=post.activity,
+        initial=initial,
+        relearn=relearn,
+        post_behavior=post_behavior,
+        protocol=protocol,
+        seed=seed,
+        total_pulses=total_pulses,
+        trace_auc=trace_auc_proxy(baseline.activity, post.activity),
+        path0=baseline.path_strength,
+        path_trained=trained.path_strength,
+        path_post=post.path_strength,
     )
 
 
@@ -73,14 +108,14 @@ def run_trial(cfg: ExperimentConfig, protocol: ResetProtocol, seed: int | None =
     if cfg.warmup_s > 0:
         net.advance(cfg.warmup_s * 1000.0, [], plasticity=False, record=False)
 
-    baseline = _capture_phase(
+    baseline = capture_phase(
         net,
         cfg.task,
         readout_window_s=cfg.readout_window_s,
         keep_snapshots=cfg.keep_snapshots,
     )
     initial = train_to_criterion(net, cfg.task)
-    trained = _capture_phase(
+    trained = capture_phase(
         net,
         cfg.task,
         readout_window_s=cfg.readout_window_s,
@@ -88,7 +123,7 @@ def run_trial(cfg: ExperimentConfig, protocol: ResetProtocol, seed: int | None =
     )
 
     A_post_reset, total_pulses = apply_reset_protocol(net, protocol, seed=trial_seed + 10_000)
-    post_reset = _capture_phase(
+    post_reset = capture_phase(
         net,
         cfg.task,
         readout_window_s=cfg.readout_window_s,
@@ -99,22 +134,16 @@ def run_trial(cfg: ExperimentConfig, protocol: ResetProtocol, seed: int | None =
     relearn = train_to_criterion(net, cfg.task)
     relearn_snap = net.snapshot() if cfg.keep_snapshots else None
 
-    artifacts = TrialArtifacts(
-        W0=baseline.weights,
-        Wtrained=trained.weights,
-        Wpost=post_reset.weights,
-        A0=baseline.activity,
-        Apost=post_reset.activity,
+    artifacts = build_trial_artifacts(
+        baseline=baseline,
+        trained=trained,
+        post=post_reset,
         initial=initial,
         relearn=relearn,
         post_behavior=post_behavior,
         protocol=protocol,
         seed=trial_seed,
         total_pulses=total_pulses,
-        trace_auc=trace_auc_proxy(baseline.activity, post_reset.activity),
-        path0=baseline.path_strength,
-        path_trained=trained.path_strength,
-        path_post=post_reset.path_strength,
     )
     metrics = compute_trial_metrics(artifacts)
 

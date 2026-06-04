@@ -17,15 +17,17 @@ from cl1_snn_reset import (
     ExperimentConfig,
     ResetProtocol,
     TaskConfig,
+    apply_reset_protocol,
     build_network,
+    build_trial_artifacts,
+    capture_phase,
     colored_noise,
+    compute_trial_metrics,
+    evaluate_task,
     protocol_events,
+    train_to_criterion,
+    trace_auc_proxy,
 )
-from cl1_snn_reset.artifacts import TrialArtifacts
-from cl1_snn_reset.experiment import _capture_phase, apply_reset_protocol
-from cl1_snn_reset.metrics import compute_trial_metrics
-from cl1_snn_reset.task import evaluate_task, train_to_criterion
-from cl1_snn_reset.trace_probe import trace_auc_proxy
 
 
 def selected_protocols() -> list[ResetProtocol]:
@@ -150,14 +152,14 @@ def run_trained_control(args: tuple[ExperimentConfig, ResetProtocol, int, str]) 
     if cfg.warmup_s > 0:
         net.advance(cfg.warmup_s * 1000.0, [], plasticity=False, record=False)
 
-    baseline = _capture_phase(
+    baseline = capture_phase(
         net,
         cfg.task,
         readout_window_s=cfg.readout_window_s,
         keep_snapshots=False,
     )
     initial = train_to_criterion(net, cfg.task)
-    trained = _capture_phase(
+    trained = capture_phase(
         net,
         cfg.task,
         readout_window_s=cfg.readout_window_s,
@@ -174,7 +176,7 @@ def run_trained_control(args: tuple[ExperimentConfig, ResetProtocol, int, str]) 
     else:
         raise ValueError(f"Unknown trained control mode: {mode}")
 
-    post = _capture_phase(
+    post = capture_phase(
         net,
         cfg.task,
         readout_window_s=cfg.readout_window_s,
@@ -182,22 +184,16 @@ def run_trained_control(args: tuple[ExperimentConfig, ResetProtocol, int, str]) 
     )
     post_behavior = evaluate_task(net, cfg.task, trials=cfg.task.eval_trials)
     relearn = train_to_criterion(net, cfg.task)
-    artifacts = TrialArtifacts(
-        W0=baseline.weights,
-        Wtrained=trained.weights,
-        Wpost=post.weights,
-        A0=baseline.activity,
-        Apost=post.activity,
+    artifacts = build_trial_artifacts(
+        baseline=baseline,
+        trained=trained,
+        post=post,
         initial=initial,
         relearn=relearn,
         post_behavior=post_behavior,
         protocol=trial_protocol,
         seed=seed,
         total_pulses=total_pulses,
-        trace_auc=trace_auc_proxy(baseline.activity, post.activity),
-        path0=baseline.path_strength,
-        path_trained=trained.path_strength,
-        path_post=post.path_strength,
     )
     row = compute_trial_metrics(artifacts).to_row()
     row.update(
@@ -220,7 +216,7 @@ def run_untrained_control(args: tuple[ExperimentConfig, ResetProtocol, int, str]
     if cfg.warmup_s > 0:
         net.advance(cfg.warmup_s * 1000.0, [], plasticity=False, record=False)
 
-    baseline = _capture_phase(
+    baseline = capture_phase(
         net,
         cfg.task,
         readout_window_s=cfg.readout_window_s,
@@ -235,7 +231,7 @@ def run_untrained_control(args: tuple[ExperimentConfig, ResetProtocol, int, str]
     else:
         raise ValueError(f"Unknown untrained control mode: {mode}")
 
-    post = _capture_phase(
+    post = capture_phase(
         net,
         cfg.task,
         readout_window_s=cfg.readout_window_s,

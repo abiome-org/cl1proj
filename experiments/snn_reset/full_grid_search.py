@@ -18,6 +18,7 @@ import pandas as pd
 from cl1_snn_reset import (
     CultureConfig,
     ExperimentConfig,
+    ResetProtocol,
     TaskConfig,
     coarse_protocol_grid,
     pareto_front,
@@ -25,7 +26,6 @@ from cl1_snn_reset import (
     run_trial,
     summarize_sweep,
 )
-from cl1_snn_reset.protocols import ResetProtocol
 
 
 def _git_commit() -> str:
