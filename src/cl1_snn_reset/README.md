@@ -25,6 +25,15 @@ from cl1_snn_reset import (
 Plot helpers live in `cl1_snn_reset.analysis` (`plot_protocol_scatter`,
 `plot_pareto_summary`). Learned inverse control lives in `cl1_snn_reset.inverse_control`.
 
+## Reference docs
+
+- [`docs/snn_reset/simulator.md`](../../docs/snn_reset/simulator.md) — the forward
+  simulation engine and the train-reset-relearn trial flow.
+- [`docs/snn_reset/metrics.md`](../../docs/snn_reset/metrics.md) — metrics, scoring,
+  and multi-objective protocol selection.
+- [`inverse_control/README.md`](inverse_control/README.md) — learned inverse reset
+  control.
+
 ## Runnable studies
 
 Grid searches, regression smoke tests, and inverse-reset pipelines are under

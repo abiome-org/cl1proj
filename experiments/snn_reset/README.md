@@ -36,7 +36,9 @@ run produces:
 | `report.md` | Human-readable summary of the run |
 
 Published notes for the calibrated 10k grid are in
-`docs/snn_reset/full_grid_10k_calibrated_20260602.md`.
+[`docs/snn_reset/full_grid_10k_calibrated_20260602.md`](../../docs/snn_reset/full_grid_10k_calibrated_20260602.md).
+The control-checks study is documented in
+[`docs/snn_reset/control_checks.md`](../../docs/snn_reset/control_checks.md).
 
 ## Regression
 
