@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from cl1_snn_reset.config import ExperimentConfig
-from cl1_snn_reset.experiment import record_spontaneous_activity
 from cl1_snn_reset.metrics import (
     criticality,
     health_metrics,
@@ -23,6 +22,7 @@ from cl1_snn_reset.task import evaluate_task, train_to_criterion
 from .inverse_optimizer import CandidateProtocol
 from .pulse_compiler import compile_program_to_stim_events, estimate_energy_cost
 from .state_projectors import StateProjector, StateVectorSpec, build_target_state
+from .training_rollout import train_baseline_and_task_states
 
 
 def validate_candidate_against_no_reset(
@@ -36,7 +36,7 @@ def validate_candidate_against_no_reset(
     relearn: bool = True,
 ) -> dict[str, Any]:
     cfg = replace(experiment_config, seed=int(seed))
-    trained_net, baseline_state, trained_state, baseline_activity, initial = _train_state(
+    trained_net, baseline_state, trained_state, baseline_activity, initial = train_baseline_and_task_states(
         cfg,
         projector,
         seed,
@@ -114,7 +114,6 @@ def validate_candidate_against_no_reset(
         and row["stimulus_effect_norm"] > 1e-9
     )
     row["passes_health_criterion"] = bool(row["validated_health"] >= 0.10)
-    row["passes_generalization_criterion"] = False
     return row
 
 
@@ -180,24 +179,6 @@ def bootstrap_candidate_effects(
             }
         )
     return pd.DataFrame(rows)
-
-
-def _train_state(cfg: ExperimentConfig, projector: StateProjector, seed: int):
-    net = build_network(cfg.culture, seed=int(seed))
-    if cfg.warmup_s > 0:
-        net.advance(cfg.warmup_s * 1000.0, [], plasticity=False, record=False)
-    baseline_probe = copy.deepcopy(net)
-    baseline_activity = record_spontaneous_activity(baseline_probe, cfg.readout_window_s)
-    baseline_state = projector.project(net, activity=baseline_activity)
-    initial = train_to_criterion(net, cfg.task)
-    trained_probe = copy.deepcopy(net)
-    trained_activity = record_spontaneous_activity(trained_probe, cfg.readout_window_s)
-    trained_state = projector.project(
-        net,
-        activity=trained_activity,
-        baseline_activity=baseline_activity,
-    )
-    return net, baseline_state, trained_state, baseline_activity, initial
 
 
 def baseline_state_weights(trained_net, cfg: ExperimentConfig, seed: int) -> np.ndarray:

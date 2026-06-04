@@ -220,116 +220,6 @@ class RidgeDeltaModel:
         return (raw - self.x_mean) / self.x_scale
 
 
-class ElasticNetDeltaModel(RidgeDeltaModel):
-    def fit(
-        self,
-        x_current: np.ndarray,
-        stim_features: np.ndarray,
-        regime_features: np.ndarray,
-        causal_delta: np.ndarray,
-    ) -> None:
-        from sklearn.linear_model import MultiTaskElasticNet
-
-        x_current = np.asarray(x_current, dtype=np.float64)
-        y = np.asarray(causal_delta, dtype=np.float64)
-        self.output_dim = int(y.shape[1])
-        self.state_indices = _select_state_indices(x_current, self.max_state_features)
-        design = self._design_matrix(x_current, stim_features, regime_features, fit=True)
-        alpha = min(self.alphas) if self.alphas else 0.01
-        self.model = MultiTaskElasticNet(alpha=alpha, l1_ratio=0.2, max_iter=3000)
-        self.model.fit(design, y)
-        pred = self.model.predict(design)
-        self.best_alpha = float(alpha)
-        self.residual_rms = float(np.sqrt(np.mean(np.square(pred - y)))) if y.size else 0.0
-
-
-class GradientBoostedDeltaModel:
-    def __init__(self, *, random_seed: int = 123, n_estimators: int = 80):
-        self.random_seed = int(random_seed)
-        self.n_estimators = int(n_estimators)
-        self.model: Any | None = None
-        self.input_mean: np.ndarray | None = None
-        self.input_scale: np.ndarray | None = None
-        self.output_dim = 0
-        self.residual_rms = 0.0
-
-    def fit(self, x_current, stim_features, regime_features, causal_delta) -> None:
-        from sklearn.ensemble import GradientBoostingRegressor
-        from sklearn.multioutput import MultiOutputRegressor
-
-        x = _flat_features(x_current, stim_features, regime_features)
-        y = np.asarray(causal_delta, dtype=np.float64)
-        self.output_dim = int(y.shape[1])
-        self.input_mean = x.mean(axis=0)
-        self.input_scale = x.std(axis=0)
-        self.input_scale[self.input_scale < 1e-9] = 1.0
-        z = (x - self.input_mean) / self.input_scale
-        base = GradientBoostingRegressor(
-            n_estimators=self.n_estimators,
-            max_depth=3,
-            random_state=self.random_seed,
-        )
-        self.model = MultiOutputRegressor(base)
-        self.model.fit(z, y)
-        pred = self.model.predict(z)
-        self.residual_rms = float(np.sqrt(np.mean(np.square(pred - y)))) if y.size else 0.0
-
-    def predict_delta(self, x_current, stim_features, regime_features) -> np.ndarray:
-        if self.model is None or self.input_mean is None or self.input_scale is None:
-            raise RuntimeError("GradientBoostedDeltaModel is not fitted.")
-        x = _flat_features(x_current, stim_features, regime_features)
-        return np.asarray(self.model.predict((x - self.input_mean) / self.input_scale), dtype=np.float64)
-
-    def predict_uncertainty(self, x_current, stim_features, regime_features) -> np.ndarray:
-        del x_current, regime_features
-        return np.full(int(np.asarray(stim_features).shape[0]), self.residual_rms, dtype=np.float64)
-
-
-class EnsembleMLPDeltaModel(GradientBoostedDeltaModel):
-    def __init__(self, *, random_seed: int = 123, ensemble_size: int = 3):
-        super().__init__(random_seed=random_seed)
-        self.ensemble_size = int(ensemble_size)
-        self.models: list[Any] = []
-
-    def fit(self, x_current, stim_features, regime_features, causal_delta) -> None:
-        from sklearn.neural_network import MLPRegressor
-
-        x = _flat_features(x_current, stim_features, regime_features)
-        y = np.asarray(causal_delta, dtype=np.float64)
-        self.output_dim = int(y.shape[1])
-        self.input_mean = x.mean(axis=0)
-        self.input_scale = x.std(axis=0)
-        self.input_scale[self.input_scale < 1e-9] = 1.0
-        z = (x - self.input_mean) / self.input_scale
-        self.models = []
-        for member in range(self.ensemble_size):
-            model = MLPRegressor(
-                hidden_layer_sizes=(64,),
-                alpha=1e-3,
-                max_iter=500,
-                random_state=self.random_seed + member,
-            )
-            model.fit(z, y)
-            self.models.append(model)
-        pred = self.predict_delta(x_current, stim_features, regime_features)
-        self.residual_rms = float(np.sqrt(np.mean(np.square(pred - y)))) if y.size else 0.0
-
-    def predict_delta(self, x_current, stim_features, regime_features) -> np.ndarray:
-        if not self.models or self.input_mean is None or self.input_scale is None:
-            raise RuntimeError("EnsembleMLPDeltaModel is not fitted.")
-        x = _flat_features(x_current, stim_features, regime_features)
-        z = (x - self.input_mean) / self.input_scale
-        return np.mean([model.predict(z) for model in self.models], axis=0)
-
-    def predict_uncertainty(self, x_current, stim_features, regime_features) -> np.ndarray:
-        if not self.models or self.input_mean is None or self.input_scale is None:
-            raise RuntimeError("EnsembleMLPDeltaModel is not fitted.")
-        x = _flat_features(x_current, stim_features, regime_features)
-        z = (x - self.input_mean) / self.input_scale
-        pred = np.stack([model.predict(z) for model in self.models], axis=0)
-        return np.sqrt(np.mean(np.var(pred, axis=0), axis=1))
-
-
 def evaluate_forward_model(
     model: ForwardDeltaModel,
     dataset: CausalDeltaDataset,
@@ -379,10 +269,6 @@ def _as_2d(values: np.ndarray) -> np.ndarray:
     if arr.ndim == 1:
         arr = arr[None, :]
     return arr
-
-
-def _flat_features(x_current: np.ndarray, stim_features: np.ndarray, regime_features: np.ndarray) -> np.ndarray:
-    return np.hstack([_as_2d(x_current), _as_2d(stim_features), _as_2d(regime_features)])
 
 
 def _row_cosine(a: np.ndarray, b: np.ndarray) -> np.ndarray:

@@ -32,27 +32,56 @@ class ResetProtocol:
         )
 
     def total_charge_uC(self, total_pulses: int) -> float:
-        return (
-            abs(float(self.current_uA))
-            * (float(self.pulse_width_us) * 1e-6)
-            * max(0, total_pulses)
-            * 2.0
+        return pulse_energy_uC(
+            self.current_uA,
+            self.pulse_width_us,
+            float(max(0, total_pulses)),
         )
 
 
-def _shift_events(events: list[StimEvent], offset_us: int) -> list[StimEvent]:
+def pulse_energy_uC(
+    current_uA: float,
+    pulse_width_us: float,
+    pulse_count: float,
+    *,
+    channels_per_pulse: float = 1.0,
+) -> float:
+    return (
+        abs(float(current_uA))
+        * float(pulse_width_us)
+        * 1e-6
+        * max(float(pulse_count), 0.0)
+        * max(float(channels_per_pulse), 1.0)
+        * 2.0
+    )
+
+
+def shift_stim_events(events: list[StimEvent], offset_us: int) -> list[StimEvent]:
     if offset_us == 0:
         return list(events)
     return [
         StimEvent(
-            time_us        = event.time_us + offset_us,
-            channels       = event.channels,
-            current_uA     = event.current_uA,
-            pulse_width_us = event.pulse_width_us,
-            phases         = event.phases,
+            time_us=event.time_us + offset_us,
+            channels=event.channels,
+            current_uA=event.current_uA,
+            pulse_width_us=event.pulse_width_us,
+            phases=event.phases,
         )
         for event in events
     ]
+
+
+def stim_events_energy_uC(events: list[StimEvent]) -> float:
+    cost = 0.0
+    for event in events:
+        cost += (
+            abs(float(event.current_uA))
+            * float(event.pulse_width_us)
+            * 1e-6
+            * max(len(event.channels), 1)
+            * 2.0
+        )
+    return float(cost)
 
 
 def _colored_events(
@@ -89,7 +118,7 @@ def protocol_events(
         half = protocol.duration_s / 2.0
         first = _colored_events(protocol, n_channels=n_channels, rng=rng, duration_s=half, beta=-1.0)
         second = _colored_events(protocol, n_channels=n_channels, rng=rng, duration_s=half, beta=2.0)
-        return first + _shift_events(second, int(round(half * 1_000_000)))
+        return first + shift_stim_events(second, int(round(half * 1_000_000)))
     if schedule == "epoch_pause":
         epoch_s = protocol.epoch_s or 0.5
         pause_s = protocol.pause_s or 0.2
@@ -98,7 +127,7 @@ def protocol_events(
         while t_s < protocol.duration_s:
             active = min(epoch_s, protocol.duration_s - t_s)
             chunk = _colored_events(protocol, n_channels=n_channels, rng=rng, duration_s=active)
-            events.extend(_shift_events(chunk, int(round(t_s * 1_000_000))))
+            events.extend(shift_stim_events(chunk, int(round(t_s * 1_000_000))))
             t_s += active + pause_s
         return events
     if schedule == "ramp":

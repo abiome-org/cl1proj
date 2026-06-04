@@ -1,10 +1,5 @@
 """
 Learned inverse reset control for the CL1-style SNN reset simulator.
-
-The subsystem learns no-reset-relative stimulation effects and searches over
-MEA-valid pulse programs.  Simulation-only weight features are allowed for
-supervision and diagnostics; compiled candidates still act only through
-channel-level stimulation events.
 """
 
 from .controllability import ControllabilityReport, analyze_controllability
@@ -12,8 +7,8 @@ from .forward_models import MeanZeroDeltaModel, RidgeDeltaModel, evaluate_forwar
 from .inverse_optimizer import (
     CMAESStimOptimizer,
     CandidateProtocol,
+    EliteMutationStimOptimizer,
     InverseResetObjective,
-    LinearInverseSolver,
     RandomSearchOptimizer,
 )
 from .pulse_compiler import (
@@ -29,56 +24,35 @@ from .rollout_dataset import (
 )
 from .state_projectors import (
     HybridStateProjector,
-    ObservableStateProjector,
-    PrivilegedStateProjector,
     StateProjector,
     StateVectorSpec,
     build_target_state,
 )
-from .stim_grammar import (
-    AntiSTDPPairingBlock,
-    ActuatorPositiveControlBlock,
-    ColoredNoiseBlock,
-    CoordinatedResetBlock,
-    LowFrequencyDepotentiationBlock,
-    ProbeTriggeredBlock,
-    RestBlock,
-    StimConstraints,
-    StimProgram,
-    TaskInputDriveBlock,
-    sample_stim_programs,
-    stim_program_features,
-)
+from .blocks import StimConstraints, StimProgram
+from .program_features import STIM_FEATURE_NAMES, stim_program_features
+from .stim_sampling import StimSamplingConfig, sample_stim_programs
 from .validation import bootstrap_candidate_effects, validate_candidate_against_no_reset
 
 __all__ = [
-    "AntiSTDPPairingBlock",
-    "ActuatorPositiveControlBlock",
-    "CMAESStimOptimizer",
     "CandidateProtocol",
     "CausalDeltaDataset",
     "CausalDeltaDatasetBuilder",
-    "ColoredNoiseBlock",
     "ControllabilityReport",
-    "CoordinatedResetBlock",
+    "EliteMutationStimOptimizer",
+    "CMAESStimOptimizer",
     "HybridStateProjector",
     "InvalidStimProgramError",
     "InverseResetObjective",
-    "LinearInverseSolver",
-    "LowFrequencyDepotentiationBlock",
     "MeanZeroDeltaModel",
-    "ObservableStateProjector",
-    "PrivilegedStateProjector",
-    "ProbeTriggeredBlock",
     "RandomSearchOptimizer",
-    "RestBlock",
     "RidgeDeltaModel",
     "RolloutExample",
     "StateProjector",
     "StateVectorSpec",
     "StimConstraints",
     "StimProgram",
-    "TaskInputDriveBlock",
+    "StimSamplingConfig",
+    "STIM_FEATURE_NAMES",
     "analyze_controllability",
     "bootstrap_candidate_effects",
     "build_target_state",

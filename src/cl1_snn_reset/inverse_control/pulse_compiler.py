@@ -6,9 +6,9 @@ from typing import Any
 import numpy as np
 
 from cl1_snn_reset.electrodes import StimEvent
-from cl1_snn_reset.noise import generate_colored_events
+from cl1_snn_reset.protocols import protocol_events, shift_stim_events, stim_events_energy_uC
 
-from .stim_grammar import (
+from .blocks import (
     AntiSTDPPairingBlock,
     ActuatorPositiveControlBlock,
     ColoredNoiseBlock,
@@ -44,7 +44,7 @@ def compile_program_to_stim_events(program: StimProgram) -> list[StimEvent]:
             n_channels=len(program.constraints.allowed_electrodes),
             rng=rng,
         )
-        events.extend(_shift_events(block_events, offset_us))
+        events.extend(shift_stim_events(block_events, offset_us))
         offset_us += int(round(float(getattr(block, "duration_s", 0.0)) * 1_000_000.0))
     events = sorted(events, key=lambda event: event.time_us)
     validate_compiled_events(program, events)
@@ -73,23 +73,14 @@ def estimate_energy_cost(
             events = compile_program_to_stim_events(program)
         except InvalidStimProgramError:
             return float("inf")
-    cost = 0.0
-    for event in events:
-        cost += (
-            abs(float(event.current_uA))
-            * float(event.pulse_width_us)
-            * 1e-6
-            * max(len(event.channels), 1)
-            * 2.0
-        )
-    return float(cost)
+    return stim_events_energy_uC(events)
 
 
 def validate_compiled_events(program: StimProgram, events: list[StimEvent]) -> None:
     constraints = program.constraints
     if program.total_duration_s > constraints.max_total_duration_s + 1e-9:
         raise InvalidStimProgramError("Program exceeds maximum duration.", ("total_duration_s",))
-    allowed = set(int(channel) for channel in constraints.allowed_electrodes)
+    allowed = {int(channel) for channel in constraints.allowed_electrodes}
     last_by_channel: dict[int, float] = {}
     counts: dict[int, int] = {}
     for event in events:
@@ -163,8 +154,6 @@ def _compile_block(
             events.append(_event(second_ms, (block.second_electrode,), block.amplitude_uA, block.pulse_width_us))
         return events
     if isinstance(block, ProbeTriggeredBlock):
-        # Static simulator proxy: each probe is followed by the anti-causal pair
-        # that a wetware loop would emit after a target response.
         events = []
         interval = max(block.cooldown_ms, 1.0)
         for index in range(block.max_triggers):
@@ -209,21 +198,7 @@ def _compile_block(
                 events.append(_event(time_ms, (int(electrode),), block.amplitude_uA, block.pulse_width_us))
         return events
     if isinstance(block, ColoredNoiseBlock):
-        mode = {
-            "clustered": "correlated",
-            "global": "shared",
-            "independent": "independent",
-        }[block.spatial_mode]
-        return generate_colored_events(
-            beta=block.beta,
-            duration_s=block.duration_s,
-            n_channels=n_channels,
-            current_uA=block.amplitude_uA,
-            pulse_width_us=block.pulse_width_us,
-            rate_hz=block.event_rate_hz,
-            spatial_mode=mode,
-            rng=rng,
-        )
+        return protocol_events(block.to_reset_protocol(), n_channels=n_channels, rng=rng)
     if isinstance(block, ActuatorPositiveControlBlock):
         events = []
         period_ms = 1000.0 / max(block.frequency_hz, 1e-9)
@@ -260,21 +235,6 @@ def _event(time_ms: float, channels: tuple[int, ...], current_uA: float, pulse_w
         current_uA=float(current_uA),
         pulse_width_us=int(pulse_width_us),
     )
-
-
-def _shift_events(events: list[StimEvent], offset_us: int) -> list[StimEvent]:
-    if offset_us == 0:
-        return events
-    return [
-        StimEvent(
-            time_us=event.time_us + int(offset_us),
-            channels=event.channels,
-            current_uA=event.current_uA,
-            pulse_width_us=event.pulse_width_us,
-            phases=event.phases,
-        )
-        for event in events
-    ]
 
 
 def _events_per_electrode(events: list[StimEvent]) -> dict[int, int]:

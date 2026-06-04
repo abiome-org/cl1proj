@@ -10,17 +10,17 @@ import numpy as np
 import pandas as pd
 
 from cl1_snn_reset.config import ExperimentConfig
-from cl1_snn_reset.experiment import record_spontaneous_activity
-from cl1_snn_reset.network import build_network
-from cl1_snn_reset.task import train_to_criterion
 
+from .program_features import STIM_FEATURE_NAMES, stim_program_features
 from .pulse_compiler import (
     InvalidStimProgramError,
     compile_program_to_stim_events,
     estimate_energy_cost,
 )
 from .state_projectors import StateProjector, StateVectorSpec
-from .stim_grammar import StimProgram, sample_stim_programs, stim_program_features
+from .blocks import StimConstraints, StimProgram
+from .stim_sampling import StimSamplingConfig, sample_stim_programs
+from .training_rollout import train_baseline_and_task_states
 
 
 @dataclass(frozen=True)
@@ -134,8 +134,6 @@ class CausalDeltaDataset:
 
     @classmethod
     def load(cls, dataset_dir: Path) -> "CausalDeltaDataset":
-        from .stim_grammar import STIM_FEATURE_NAMES
-
         dataset_dir = Path(dataset_dir)
         with (dataset_dir / "state_vector_spec.json").open(encoding="utf-8") as handle:
             spec = StateVectorSpec.from_json_dict(json.load(handle))
@@ -189,10 +187,10 @@ class CausalDeltaDatasetBuilder:
         *,
         projector: StateProjector,
         experiment_config: ExperimentConfig,
-        constraints,
+        constraints: StimConstraints,
         seeds: Iterable[int],
         programs_per_trained_state: int,
-        stim_sampling: dict[str, Any],
+        stim_sampling: StimSamplingConfig | dict[str, Any],
         random_seed: int = 123,
     ):
         self.projector = projector
@@ -200,36 +198,32 @@ class CausalDeltaDatasetBuilder:
         self.constraints = constraints
         self.seeds = tuple(int(seed) for seed in seeds)
         self.programs_per_trained_state = int(programs_per_trained_state)
-        self.stim_sampling = dict(stim_sampling)
+        self.stim_sampling = (
+            stim_sampling
+            if isinstance(stim_sampling, StimSamplingConfig)
+            else StimSamplingConfig.from_dict(stim_sampling)
+        )
         self.random_seed = int(random_seed)
 
     def build(self) -> CausalDeltaDataset:
-        from .stim_grammar import STIM_FEATURE_NAMES
-
         examples: list[RolloutExample] = []
         rng = np.random.default_rng(self.random_seed)
         task = self.experiment_config.task
         input_channel = int(task.input_channels[0])
         target_channel = int(task.target_channels[0])
         for seed in self.seeds:
-            trained_net, baseline_state, trained_state, baseline_activity, training = self._train_state(seed)
+            trained_net, baseline_state, trained_state, baseline_activity, training = train_baseline_and_task_states(
+                self.experiment_config,
+                self.projector,
+                seed,
+            )
             programs = sample_stim_programs(
                 count=self.programs_per_trained_state,
                 constraints=self.constraints,
                 input_channel=input_channel,
                 target_channel=target_channel,
                 rng=rng,
-                include_blocks=tuple(self.stim_sampling.get("include_blocks", ())),
-                amplitude_uA=tuple(float(v) for v in self.stim_sampling.get("amplitude_uA", (0.8, 1.2, 1.6, 2.0))),
-                duration_s=tuple(float(v) for v in self.stim_sampling.get("duration_s", (0.75, 1.5, 3.0))),
-                delays_ms=tuple(float(v) for v in self.stim_sampling.get("delays_ms", (2, 5, 10, 20, 40, 80))),
-                positive_control_frequency_hz=tuple(
-                    float(v) for v in self.stim_sampling.get("positive_control_frequency_hz", (80.0, 100.0, 120.0))
-                ),
-                input_drive_frequency_hz=tuple(
-                    float(v) for v in self.stim_sampling.get("input_drive_frequency_hz", (80.0, 90.0, 100.0, 110.0, 140.0, 160.0, 200.0))
-                ),
-                input_drive_modes=tuple(str(v) for v in self.stim_sampling.get("input_drive_modes", ("single_input", "input_neighborhood"))),
+                sampling=self.stim_sampling,
             )
             wait_cache: dict[float, tuple[np.ndarray, Any, Any]] = {}
             for local_index, program in enumerate(programs):
@@ -317,25 +311,6 @@ class CausalDeltaDatasetBuilder:
             stim_feature_names=tuple(STIM_FEATURE_NAMES),
             regime_feature_names=("duration_s", "energy_cost", "training_response_probability"),
         )
-
-    def _train_state(self, seed: int):
-        cfg = self.experiment_config
-        net = build_network(cfg.culture, seed=int(seed))
-        if cfg.warmup_s > 0:
-            net.advance(cfg.warmup_s * 1000.0, [], plasticity=False, record=False)
-        baseline_probe = copy.deepcopy(net)
-        baseline_activity = record_spontaneous_activity(baseline_probe, cfg.readout_window_s)
-        baseline_state = self.projector.project(net, activity=baseline_activity)
-        training = train_to_criterion(net, cfg.task)
-        trained_probe = copy.deepcopy(net)
-        trained_activity = record_spontaneous_activity(trained_probe, cfg.readout_window_s)
-        trained_state = self.projector.project(
-            net,
-            activity=trained_activity,
-            baseline_activity=baseline_activity,
-        )
-        return net, baseline_state, trained_state, baseline_activity, training
-
 
 def _write_table(table: pd.DataFrame, parquet_path: Path) -> None:
     try:

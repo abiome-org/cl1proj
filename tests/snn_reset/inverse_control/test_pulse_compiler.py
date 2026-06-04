@@ -1,14 +1,16 @@
 import pytest
 
 from cl1_snn_reset.inverse_control import (
-    AntiSTDPPairingBlock,
-    ActuatorPositiveControlBlock,
     InvalidStimProgramError,
+    compile_program_to_stim_events,
+    estimate_energy_cost,
+)
+from cl1_snn_reset.inverse_control.blocks import (
+    ActuatorPositiveControlBlock,
+    AntiSTDPPairingBlock,
     StimConstraints,
     StimProgram,
     TaskInputDriveBlock,
-    compile_program_to_stim_events,
-    estimate_energy_cost,
 )
 
 

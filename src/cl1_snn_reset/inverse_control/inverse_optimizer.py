@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 from .pulse_compiler import InvalidStimProgramError, compile_program_to_stim_events, estimate_energy_cost
+from .program_features import stim_program_features
 from .state_projectors import StateVectorSpec
-from .stim_grammar import StimConstraints, StimProgram, mutate_stim_program, sample_stim_programs, stim_program_features
+from .stim_sampling import StimSamplingConfig, mutate_stim_program, sample_stim_programs
+from .blocks import StimConstraints, StimProgram
 
 
 @dataclass(frozen=True)
@@ -103,31 +104,6 @@ class InverseResetObjective:
         }
 
 
-class LinearInverseSolver:
-    def propose_from_dataset(
-        self,
-        *,
-        model,
-        programs: list[StimProgram],
-        x_current: np.ndarray,
-        no_reset_state: np.ndarray,
-        target_state: np.ndarray,
-        objective: InverseResetObjective,
-        candidate_count: int,
-        protocol_prefix: str,
-    ) -> list[CandidateProtocol]:
-        return _score_programs(
-            model=model,
-            programs=programs,
-            x_current=x_current,
-            no_reset_state=no_reset_state,
-            target_state=target_state,
-            objective=objective,
-            candidate_count=candidate_count,
-            protocol_prefix=protocol_prefix,
-        )
-
-
 class RandomSearchOptimizer:
     def __init__(
         self,
@@ -149,10 +125,11 @@ class RandomSearchOptimizer:
         constraints: StimConstraints,
         input_channel: int,
         target_channel: int,
-        stim_sampling: dict[str, Any],
+        stim_sampling: StimSamplingConfig | dict[str, Any],
         candidate_count: int,
         protocol_prefix: str = "candidate",
     ) -> list[CandidateProtocol]:
+        sampling = _resolve_sampling(stim_sampling)
         rng = np.random.default_rng(self.random_seed)
         programs = sample_stim_programs(
             count=self.max_evaluations,
@@ -160,13 +137,7 @@ class RandomSearchOptimizer:
             input_channel=input_channel,
             target_channel=target_channel,
             rng=rng,
-            include_blocks=tuple(stim_sampling.get("include_blocks", ())),
-            amplitude_uA=tuple(float(v) for v in stim_sampling.get("amplitude_uA", (0.8, 1.2, 1.6, 2.0))),
-            duration_s=tuple(float(v) for v in stim_sampling.get("duration_s", (0.75, 1.5, 3.0))),
-            delays_ms=tuple(float(v) for v in stim_sampling.get("delays_ms", (2, 5, 10, 20, 40, 80))),
-            positive_control_frequency_hz=tuple(float(v) for v in stim_sampling.get("positive_control_frequency_hz", (80.0, 100.0, 120.0))),
-            input_drive_frequency_hz=tuple(float(v) for v in stim_sampling.get("input_drive_frequency_hz", (80.0, 90.0, 100.0, 110.0, 140.0, 160.0, 200.0))),
-            input_drive_modes=tuple(str(v) for v in stim_sampling.get("input_drive_modes", ("single_input", "input_neighborhood"))),
+            sampling=sampling,
         )
         return _score_programs(
             model=model,
@@ -180,15 +151,8 @@ class RandomSearchOptimizer:
         )
 
 
-class CMAESStimOptimizer(RandomSearchOptimizer):
-    """
-    Lightweight mixed-grammar evolution strategy.
-
-    It uses random grammar sampling for exploration, then mutates elite valid
-    pulse programs in a CEM/CMA-ES-like loop.  This avoids adding a dependency
-    while still optimizing over continuous timing/amplitude parameters instead
-    of ranking a fixed grid.
-    """
+class EliteMutationStimOptimizer(RandomSearchOptimizer):
+    """Random grammar sampling plus elite mutation rounds (CEM-style, not CMA-ES)."""
 
     def __init__(
         self,
@@ -203,6 +167,7 @@ class CMAESStimOptimizer(RandomSearchOptimizer):
         self.elite_fraction = float(elite_fraction)
 
     def propose(self, **kwargs: Any) -> list[CandidateProtocol]:
+        sampling = _resolve_sampling(kwargs["stim_sampling"])
         rng = np.random.default_rng(self.random_seed)
         budget = max(self.max_evaluations, kwargs["candidate_count"])
         per_round = max(kwargs["candidate_count"] * 4, budget // max(self.rounds, 1))
@@ -212,13 +177,7 @@ class CMAESStimOptimizer(RandomSearchOptimizer):
             input_channel=kwargs["input_channel"],
             target_channel=kwargs["target_channel"],
             rng=rng,
-            include_blocks=tuple(kwargs["stim_sampling"].get("include_blocks", ())),
-            amplitude_uA=tuple(float(v) for v in kwargs["stim_sampling"].get("amplitude_uA", (0.8, 1.2, 1.6, 2.0))),
-            duration_s=tuple(float(v) for v in kwargs["stim_sampling"].get("duration_s", (0.75, 1.5, 3.0))),
-            delays_ms=tuple(float(v) for v in kwargs["stim_sampling"].get("delays_ms", (2, 5, 10, 20, 40, 80))),
-            positive_control_frequency_hz=tuple(float(v) for v in kwargs["stim_sampling"].get("positive_control_frequency_hz", (80.0, 100.0, 120.0))),
-            input_drive_frequency_hz=tuple(float(v) for v in kwargs["stim_sampling"].get("input_drive_frequency_hz", (80.0, 90.0, 100.0, 110.0, 140.0, 160.0, 200.0))),
-            input_drive_modes=tuple(str(v) for v in kwargs["stim_sampling"].get("input_drive_modes", ("single_input", "input_neighborhood"))),
+            sampling=sampling,
         )
         evaluated: list[CandidateProtocol] = []
         for round_index in range(max(self.rounds, 1)):
@@ -246,33 +205,20 @@ class CMAESStimOptimizer(RandomSearchOptimizer):
                             rng=rng,
                             input_channel=kwargs["input_channel"],
                             target_channel=kwargs["target_channel"],
-                            scale=max(0.08, 0.45 * (0.7 ** round_index)),
+                            scale=max(0.08, 0.45 * (0.7**round_index)),
                         )
                     )
         unique = _unique_candidates(evaluated)
         return sorted(unique, key=lambda candidate: candidate.predicted_loss)[: kwargs["candidate_count"]]
 
 
-def write_candidates(
-    candidates: list[CandidateProtocol],
-    output_dir: Path,
-) -> None:
-    output_dir.mkdir(parents=True, exist_ok=True)
-    import pandas as pd
+CMAESStimOptimizer = EliteMutationStimOptimizer
 
-    pd.DataFrame([candidate.to_row() for candidate in candidates]).to_csv(
-        output_dir / "optimized_protocols.csv",
-        index=False,
-    )
-    with (output_dir / "optimized_protocols.jsonl").open("w", encoding="utf-8") as handle:
-        for candidate in candidates:
-            payload = candidate.stim_program.to_json() | {
-                "protocol_id": candidate.protocol_id,
-                "predicted_loss": candidate.predicted_loss,
-                "predicted_task_erasure": candidate.predicted_task_erasure,
-                "model_uncertainty": candidate.model_uncertainty,
-            }
-            handle.write(json.dumps(payload, sort_keys=True) + "\n")
+
+def _resolve_sampling(stim_sampling: StimSamplingConfig | dict[str, Any]) -> StimSamplingConfig:
+    if isinstance(stim_sampling, StimSamplingConfig):
+        return stim_sampling
+    return StimSamplingConfig.from_dict(stim_sampling)
 
 
 def _score_programs(

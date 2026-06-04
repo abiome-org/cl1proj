@@ -5,7 +5,7 @@ import json
 import pickle
 import platform
 import subprocess
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -14,9 +14,9 @@ import numpy as np
 
 from cl1_snn_reset.config import CultureConfig, ExperimentConfig, TaskConfig, to_dict
 from cl1_snn_reset.inverse_control import (
-    CMAESStimOptimizer,
     CausalDeltaDataset,
     CausalDeltaDatasetBuilder,
+    EliteMutationStimOptimizer,
     HybridStateProjector,
     InverseResetObjective,
     RandomSearchOptimizer,
@@ -33,115 +33,55 @@ from cl1_snn_reset.inverse_control.reporting import (
     write_controllability_artifacts,
     write_inverse_reset_report,
 )
+from cl1_snn_reset.inverse_control.stim_sampling import StimSamplingConfig
 from cl1_snn_reset.inverse_control.validation import validate_candidates_against_no_reset
+
+
+@dataclass
+class RunContext:
+    run_id: str
+    mode: str
+    output_dir: Path
+    payload: dict[str, Any]
+    experiment_config: ExperimentConfig
+    constraints: StimConstraints
+    projector: HybridStateProjector
+    metadata: dict[str, Any]
+    target_mode: str
+    stim_sampling: StimSamplingConfig
+
+    @property
+    def dataset_dir(self) -> Path:
+        return self.output_dir / "dataset"
+
+    @property
+    def model_path(self) -> Path:
+        return self.output_dir / "models" / "linear_delta_model.pkl"
+
+    @property
+    def candidates_path(self) -> Path:
+        return self.output_dir / "candidates" / "optimized_protocols.jsonl"
 
 
 def main() -> None:
     args = _parse_args()
-    payload = _load_yaml(args.config)
-    run_id = args.run_id or datetime.now(timezone.utc).strftime("inverse_reset_%Y%m%dT%H%M%SZ")
-    output_root = Path(payload.get("run", {}).get("output_dir", "experiments/snn_reset/results"))
-    output_dir = args.output_dir or output_root / run_id
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    experiment_config = _experiment_config(payload)
-    constraints = StimConstraints.from_dict(payload.get("constraints", {}))
-    projector = _projector(payload, experiment_config)
-    metadata = _metadata(run_id, args.mode, output_dir, payload, experiment_config, constraints)
-    _write_json(output_dir / "metadata.json", metadata)
-    print(json.dumps({"event": "start", "run_id": run_id, "mode": args.mode, "output_dir": str(output_dir)}), flush=True)
-
-    dataset: CausalDeltaDataset | None = None
-    model: RidgeDeltaModel | None = None
-    candidates: list[CandidateProtocol] = []
-    validation = None
-
-    if args.mode in {"dataset", "full"}:
-        dataset = _build_dataset(payload, experiment_config, constraints, projector)
-        dataset.save(output_dir / "dataset")
-        metadata["dataset_examples"] = len(dataset.examples)
-        _write_json(output_dir / "metadata.json", metadata)
-        print(json.dumps({"event": "dataset", "examples": len(dataset.examples)}), flush=True)
-
-    if args.mode in {"controllability", "optimize", "validate"}:
-        dataset = CausalDeltaDataset.load(args.dataset_dir or output_dir / "dataset")
-
-    if args.mode in {"controllability", "optimize", "full"}:
-        assert dataset is not None
-        model = _fit_model(payload, dataset)
-        _save_model(model, output_dir / "models" / "linear_delta_model.pkl")
-        diagnostics = evaluate_forward_model(model, dataset, state_spec=dataset.state_spec)
-        report = analyze_controllability(
-            model=model,
-            dataset=dataset,
-            state_spec=dataset.state_spec,
-            target_mode=payload.get("target", {}).get("mode", "trace_removed"),
-        )
-        diagnostics["controllability_by_seed"] = _controllability_by_seed(
-            model,
-            dataset,
-            target_mode=payload.get("target", {}).get("mode", "trace_removed"),
-        )
-        write_controllability_artifacts(
-            report=report,
-            dataset=dataset,
-            diagnostics=diagnostics,
-            output_dir=output_dir / "reports",
-            metadata=metadata | {"dataset_examples": len(dataset.examples)},
-        )
-        metadata["model_diagnostics"] = diagnostics
-        metadata["controllability"] = report.to_json_dict()
-        _write_json(output_dir / "metadata.json", metadata)
-        print(
-            json.dumps(
-                {
-                    "event": "controllability",
-                    "fraction": report.controllable_fraction,
-                    "recommendation": report.recommendation,
-                },
-                sort_keys=True,
-            ),
+    ctx = _build_run_context(args)
+    _write_json(ctx.output_dir / "metadata.json", ctx.metadata)
+    print(
+        json.dumps(
+            {"event": "start", "run_id": ctx.run_id, "mode": ctx.mode, "output_dir": str(ctx.output_dir)},
             flush=True,
         )
+    )
 
-    if args.mode == "validate":
-        model = _load_model(args.model_path or output_dir / "models" / "linear_delta_model.pkl")
-        candidates = _load_candidates(args.candidates_path or output_dir / "candidates" / "optimized_protocols.jsonl")
+    dataset = _run_dataset_stage(ctx, args)
+    model = _run_controllability_stage(ctx, dataset, args)
+    candidates = _run_optimize_stage(ctx, dataset, model, args)
+    _run_validate_stage(ctx, dataset, candidates, args)
 
-    if args.mode in {"optimize", "full"}:
-        assert dataset is not None and model is not None
-        candidates = _optimize(payload, dataset, model, constraints)
-        write_candidate_csv(candidates, output_dir / "candidates")
-        print(json.dumps({"event": "optimize", "candidates": len(candidates)}), flush=True)
-
-    if args.mode in {"validate", "full"}:
-        assert dataset is not None
-        if not candidates:
-            candidates = _load_candidates(args.candidates_path or output_dir / "candidates" / "optimized_protocols.jsonl")
-        validation_seeds = tuple(int(seed) for seed in payload.get("seeds", {}).get("heldout", ())) or tuple(
-            int(seed) for seed in payload.get("seeds", {}).get("train", (1,))
-        )
-        validation = validate_candidates_against_no_reset(
-            candidates=candidates,
-            experiment_config=experiment_config,
-            projector=projector,
-            state_spec=dataset.state_spec,
-            seeds=validation_seeds,
-            target_mode=payload.get("target", {}).get("mode", "trace_removed"),
-            output_dir=output_dir / "validation",
-            limit=int(payload.get("validation", {}).get("candidate_limit", len(candidates))),
-        )
-        write_inverse_reset_report(
-            candidates=candidates,
-            validation=validation,
-            output_dir=output_dir / "reports",
-            metadata=metadata | {"dataset_examples": len(dataset.examples), "mode": args.mode},
-        )
-        print(json.dumps({"event": "validate", "rows": len(validation)}), flush=True)
-
-    metadata["finished_at_utc"] = datetime.now(timezone.utc).isoformat()
-    _write_json(output_dir / "metadata.json", metadata)
-    print(json.dumps({"event": "complete", "output_dir": str(output_dir)}), flush=True)
+    ctx.metadata["finished_at_utc"] = datetime.now(timezone.utc).isoformat()
+    _write_json(ctx.output_dir / "metadata.json", ctx.metadata)
+    print(json.dumps({"event": "complete", "output_dir": str(ctx.output_dir)}), flush=True)
 
 
 def _parse_args() -> argparse.Namespace:
@@ -158,6 +98,149 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--model-path", type=Path, default=None)
     parser.add_argument("--candidates-path", type=Path, default=None)
     return parser.parse_args()
+
+
+def _build_run_context(args: argparse.Namespace) -> RunContext:
+    payload = _load_yaml(args.config)
+    run_id = args.run_id or datetime.now(timezone.utc).strftime("inverse_reset_%Y%m%dT%H%M%SZ")
+    output_root = Path(payload.get("run", {}).get("output_dir", "experiments/snn_reset/results"))
+    output_dir = args.output_dir or output_root / run_id
+    output_dir.mkdir(parents=True, exist_ok=True)
+    experiment_config = _experiment_config(payload)
+    constraints = StimConstraints.from_dict(payload.get("constraints", {}))
+    projector = _projector(payload, experiment_config)
+    metadata = _metadata(run_id, args.mode, output_dir, payload, experiment_config, constraints)
+    return RunContext(
+        run_id=run_id,
+        mode=args.mode,
+        output_dir=output_dir,
+        payload=payload,
+        experiment_config=experiment_config,
+        constraints=constraints,
+        projector=projector,
+        metadata=metadata,
+        target_mode=str(payload.get("target", {}).get("mode", "trace_removed")),
+        stim_sampling=StimSamplingConfig.from_dict(payload.get("stim_sampling", {})),
+    )
+
+
+def _run_dataset_stage(ctx: RunContext, args: argparse.Namespace) -> CausalDeltaDataset | None:
+    if ctx.mode not in {"dataset", "full"}:
+        return None
+    builder = CausalDeltaDatasetBuilder(
+        projector=ctx.projector,
+        experiment_config=ctx.experiment_config,
+        constraints=ctx.constraints,
+        seeds=tuple(int(seed) for seed in ctx.payload.get("seeds", {}).get("train", (1, 3, 4))),
+        programs_per_trained_state=int(
+            ctx.payload.get("stim_sampling", {}).get("programs_per_trained_state", 100)
+        ),
+        stim_sampling=ctx.stim_sampling,
+        random_seed=int(ctx.payload.get("run", {}).get("random_seed", 123)),
+    )
+    dataset = builder.build()
+    dataset.save(ctx.dataset_dir)
+    ctx.metadata["dataset_examples"] = len(dataset.examples)
+    _write_json(ctx.output_dir / "metadata.json", ctx.metadata)
+    print(json.dumps({"event": "dataset", "examples": len(dataset.examples)}), flush=True)
+    return dataset
+
+
+def _run_controllability_stage(
+    ctx: RunContext,
+    dataset: CausalDeltaDataset | None,
+    args: argparse.Namespace,
+) -> RidgeDeltaModel | None:
+    if ctx.mode not in {"controllability", "optimize", "full"}:
+        return None
+    dataset = dataset or CausalDeltaDataset.load(args.dataset_dir or ctx.dataset_dir)
+    model = _fit_model(ctx.payload, dataset)
+    _save_model(model, ctx.model_path)
+    diagnostics = evaluate_forward_model(model, dataset, state_spec=dataset.state_spec)
+    report = analyze_controllability(
+        model=model,
+        dataset=dataset,
+        state_spec=dataset.state_spec,
+        target_mode=ctx.target_mode,
+    )
+    diagnostics["controllability_by_seed"] = _controllability_by_seed(
+        model,
+        dataset,
+        target_mode=ctx.target_mode,
+    )
+    write_controllability_artifacts(
+        report=report,
+        dataset=dataset,
+        diagnostics=diagnostics,
+        output_dir=ctx.output_dir / "reports",
+        metadata=ctx.metadata | {"dataset_examples": len(dataset.examples)},
+    )
+    ctx.metadata["model_diagnostics"] = diagnostics
+    ctx.metadata["controllability"] = report.to_json_dict()
+    _write_json(ctx.output_dir / "metadata.json", ctx.metadata)
+    print(
+        json.dumps(
+            {
+                "event": "controllability",
+                "fraction": report.controllable_fraction,
+                "recommendation": report.recommendation,
+            },
+            sort_keys=True,
+        ),
+        flush=True,
+    )
+    return model
+
+
+def _run_optimize_stage(
+    ctx: RunContext,
+    dataset: CausalDeltaDataset | None,
+    model: RidgeDeltaModel | None,
+    args: argparse.Namespace,
+) -> list[CandidateProtocol]:
+    if ctx.mode not in {"optimize", "full"}:
+        if ctx.mode == "validate":
+            return _load_candidates(args.candidates_path or ctx.candidates_path)
+        return []
+    dataset = dataset or CausalDeltaDataset.load(args.dataset_dir or ctx.dataset_dir)
+    model = model or _load_model(args.model_path or ctx.model_path)
+    candidates = _optimize(ctx, dataset, model)
+    write_candidate_csv(candidates, ctx.output_dir / "candidates")
+    print(json.dumps({"event": "optimize", "candidates": len(candidates)}), flush=True)
+    return candidates
+
+
+def _run_validate_stage(
+    ctx: RunContext,
+    dataset: CausalDeltaDataset | None,
+    candidates: list[CandidateProtocol],
+    args: argparse.Namespace,
+) -> None:
+    if ctx.mode not in {"validate", "full"}:
+        return
+    dataset = dataset or CausalDeltaDataset.load(args.dataset_dir or ctx.dataset_dir)
+    if not candidates:
+        candidates = _load_candidates(args.candidates_path or ctx.candidates_path)
+    validation_seeds = tuple(int(seed) for seed in ctx.payload.get("seeds", {}).get("heldout", ())) or tuple(
+        int(seed) for seed in ctx.payload.get("seeds", {}).get("train", (1,))
+    )
+    validation = validate_candidates_against_no_reset(
+        candidates=candidates,
+        experiment_config=ctx.experiment_config,
+        projector=ctx.projector,
+        state_spec=dataset.state_spec,
+        seeds=validation_seeds,
+        target_mode=ctx.target_mode,
+        output_dir=ctx.output_dir / "validation",
+        limit=int(ctx.payload.get("validation", {}).get("candidate_limit", len(candidates))),
+    )
+    write_inverse_reset_report(
+        candidates=candidates,
+        validation=validation,
+        output_dir=ctx.output_dir / "reports",
+        metadata=ctx.metadata | {"dataset_examples": len(dataset.examples), "mode": ctx.mode},
+    )
+    print(json.dumps({"event": "validate", "rows": len(validation)}), flush=True)
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -219,26 +302,6 @@ def _projector(payload: dict[str, Any], cfg: ExperimentConfig) -> HybridStatePro
     )
 
 
-def _build_dataset(
-    payload: dict[str, Any],
-    experiment_config: ExperimentConfig,
-    constraints: StimConstraints,
-    projector: HybridStateProjector,
-) -> CausalDeltaDataset:
-    seeds = tuple(int(seed) for seed in payload.get("seeds", {}).get("train", (1, 3, 4)))
-    sampling = dict(payload.get("stim_sampling", {}))
-    builder = CausalDeltaDatasetBuilder(
-        projector=projector,
-        experiment_config=experiment_config,
-        constraints=constraints,
-        seeds=seeds,
-        programs_per_trained_state=int(sampling.get("programs_per_trained_state", 100)),
-        stim_sampling=sampling,
-        random_seed=int(payload.get("run", {}).get("random_seed", 123)),
-    )
-    return builder.build()
-
-
 def _fit_model(payload: dict[str, Any], dataset: CausalDeltaDataset) -> RidgeDeltaModel:
     model_config = payload.get("model", {})
     alphas = tuple(float(v) for v in model_config.get("regularization", {}).get("ridge_alpha", (0.1, 1.0, 10.0)))
@@ -258,17 +321,12 @@ def _fit_model(payload: dict[str, Any], dataset: CausalDeltaDataset) -> RidgeDel
     return model
 
 
-def _optimize(
-    payload: dict[str, Any],
-    dataset: CausalDeltaDataset,
-    model: RidgeDeltaModel,
-    constraints: StimConstraints,
-) -> list[CandidateProtocol]:
-    optimizer_config = payload.get("optimizer", {})
+def _optimize(ctx: RunContext, dataset: CausalDeltaDataset, model: RidgeDeltaModel) -> list[CandidateProtocol]:
+    optimizer_config = ctx.payload.get("optimizer", {})
     objective = InverseResetObjective(
         dataset.state_spec,
-        loss_weights=payload.get("loss_weights", {}),
-        max_energy_cost=constraints.max_energy_cost,
+        loss_weights=ctx.payload.get("loss_weights", {}),
+        max_energy_cost=ctx.constraints.max_energy_cost,
     )
     example_index = int(optimizer_config.get("example_index", 0))
     baseline = dataset.baseline_states[example_index]
@@ -279,13 +337,17 @@ def _optimize(
         baseline,
         trained,
         no_reset,
-        mode=payload.get("target", {}).get("mode", "trace_removed"),
+        mode=ctx.target_mode,
     )
-    optimizer_type = str(optimizer_config.get("type", "cma_es")).lower()
-    klass = CMAESStimOptimizer if optimizer_type in {"cma_es", "cmaes", "cem"} else RandomSearchOptimizer
+    optimizer_type = str(optimizer_config.get("type", "elite_mutation")).lower()
+    klass = (
+        EliteMutationStimOptimizer
+        if optimizer_type in {"elite_mutation", "cma_es", "cmaes", "cem"}
+        else RandomSearchOptimizer
+    )
     optimizer = klass(
         max_evaluations=int(optimizer_config.get("max_evaluations", 1000)),
-        random_seed=int(payload.get("run", {}).get("random_seed", 123)),
+        random_seed=int(ctx.payload.get("run", {}).get("random_seed", 123)),
     )
     return optimizer.propose(
         model=model,
@@ -293,10 +355,10 @@ def _optimize(
         no_reset_state=no_reset,
         target_state=target,
         objective=objective,
-        constraints=constraints,
+        constraints=ctx.constraints,
         input_channel=int(dataset.examples[example_index].task_input_channel),
         target_channel=int(dataset.examples[example_index].task_target_channel),
-        stim_sampling=payload.get("stim_sampling", {}),
+        stim_sampling=ctx.stim_sampling,
         candidate_count=int(optimizer_config.get("candidates_per_state", 20)),
         protocol_prefix="optimized",
     )
@@ -356,12 +418,12 @@ def _load_candidates(path: Path) -> list[CandidateProtocol]:
             CandidateProtocol(
                 protocol_id=str(payload.get("protocol_id", f"loaded_{index:05d}")),
                 stim_program=program,
-                predicted_delta=np.array([], dtype=np.float64),
-                predicted_post_state=np.array([], dtype=np.float64),
+                predicted_delta=np.asarray(payload.get("predicted_delta", []), dtype=np.float64),
+                predicted_post_state=np.asarray(payload.get("predicted_post_state", []), dtype=np.float64),
                 predicted_loss=float(payload.get("predicted_loss", 0.0)),
                 predicted_task_erasure=float(payload.get("predicted_task_erasure", 0.0)),
                 predicted_health_penalty=float(payload.get("predicted_health_penalty", 0.0)),
-                predicted_energy_cost=float(payload.get("estimated_energy_cost", 0.0)),
+                predicted_energy_cost=float(payload.get("estimated_energy_cost", payload.get("energy_cost", 0.0))),
                 model_uncertainty=float(payload.get("model_uncertainty", 0.0)),
             )
         )
@@ -400,7 +462,7 @@ def _git_commit() -> str:
             text=True,
             stderr=subprocess.DEVNULL,
         ).strip()
-    except Exception:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         return "unknown"
 
 

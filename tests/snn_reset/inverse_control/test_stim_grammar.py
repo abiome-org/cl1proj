@@ -1,15 +1,16 @@
 import numpy as np
 
-from cl1_snn_reset.inverse_control import (
-    AntiSTDPPairingBlock,
+from cl1_snn_reset.inverse_control.blocks import (
     ActuatorPositiveControlBlock,
+    AntiSTDPPairingBlock,
     StimConstraints,
     StimProgram,
     TaskInputDriveBlock,
-    sample_stim_programs,
-    stim_program_features,
+    block_from_json,
+    block_to_json,
 )
-from cl1_snn_reset.inverse_control.stim_grammar import block_from_json, block_to_json
+from cl1_snn_reset.inverse_control.program_features import stim_program_features
+from cl1_snn_reset.inverse_control.stim_sampling import sample_stim_programs
 
 
 def test_block_serialization_round_trips():

@@ -7,7 +7,8 @@ import numpy as np
 
 from .inverse_optimizer import CandidateProtocol, InverseResetObjective, RandomSearchOptimizer
 from .state_projectors import StateProjector, build_target_state
-from .stim_grammar import StimConstraints
+from .blocks import StimConstraints
+from .stim_sampling import StimSamplingConfig
 
 
 @dataclass
@@ -18,13 +19,6 @@ class ClosedLoopResetSession:
 
 
 class ModelPredictiveResetController:
-    """
-    Short-block MPC hook for Phase 4.
-
-    The current MVP uses the same constrained optimizer for each measured state;
-    wetware execution is intentionally outside this subsystem.
-    """
-
     def __init__(
         self,
         *,
@@ -33,12 +27,14 @@ class ModelPredictiveResetController:
         objective: InverseResetObjective,
         constraints: StimConstraints,
         optimizer: RandomSearchOptimizer | None = None,
+        target_mode: str = "trace_removed",
     ):
         self.model = model
         self.projector = projector
         self.objective = objective
         self.constraints = constraints
         self.optimizer = optimizer or RandomSearchOptimizer(max_evaluations=128)
+        self.target_mode = target_mode
 
     def choose_block(
         self,
@@ -49,13 +45,14 @@ class ModelPredictiveResetController:
         no_reset_state: np.ndarray,
         input_channel: int,
         target_channel: int,
-        stim_sampling: dict[str, Any],
+        stim_sampling: StimSamplingConfig | dict[str, Any],
     ) -> CandidateProtocol:
         target = build_target_state(
             self.objective.state_spec,
             baseline_state,
             trained_state,
             no_reset_state,
+            mode=self.target_mode,
         )
         candidates = self.optimizer.propose(
             model=self.model,
