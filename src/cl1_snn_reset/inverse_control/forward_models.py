@@ -91,12 +91,21 @@ class RidgeDeltaModel:
         self,
         *,
         alphas: tuple[float, ...] = (0.1, 1.0, 10.0),
+        train_fraction: float = 0.75,
+        validation_fraction: float = 0.25,
+        test_fraction: float = 0.0,
         max_state_features: int = 64,
         max_interaction_state_features: int = 24,
         max_interaction_control_features: int = 24,
         random_seed: int = 123,
     ):
         self.alphas = tuple(float(alpha) for alpha in alphas)
+        total_fraction = train_fraction + validation_fraction + test_fraction
+        if train_fraction <= 0.0 or validation_fraction < 0.0 or test_fraction < 0.0 or total_fraction <= 0.0:
+            raise ValueError("Model split fractions must be non-negative with a positive train fraction.")
+        self.train_fraction = float(train_fraction / total_fraction)
+        self.validation_fraction = float(validation_fraction / total_fraction)
+        self.test_fraction = float(test_fraction / total_fraction)
         self.max_state_features = int(max_state_features)
         self.max_interaction_state_features = int(max_interaction_state_features)
         self.max_interaction_control_features = int(max_interaction_control_features)
@@ -109,6 +118,8 @@ class RidgeDeltaModel:
         self.output_dim = 0
         self.best_alpha: float | None = None
         self.residual_rms = 0.0
+        self.validation_rms = 0.0
+        self.test_rms = 0.0
 
     def fit(
         self,
@@ -126,9 +137,15 @@ class RidgeDeltaModel:
         design = self._design_matrix(x_current, stim_features, regime_features, fit=True)
         rng = np.random.default_rng(self.random_seed)
         order = rng.permutation(design.shape[0])
-        split = max(1, int(0.75 * design.shape[0]))
-        train_idx = order[:split]
-        val_idx = order[split:] if split < design.shape[0] else order[:split]
+        train_end = max(1, int(self.train_fraction * design.shape[0]))
+        val_end = train_end + int(self.validation_fraction * design.shape[0])
+        if train_end >= design.shape[0]:
+            train_end = max(1, design.shape[0] - 1)
+        if val_end <= train_end:
+            val_end = min(design.shape[0], train_end + 1)
+        train_idx = order[:train_end]
+        val_idx = order[train_end:val_end] if train_end < design.shape[0] else train_idx
+        test_idx = order[val_end:] if val_end < design.shape[0] else val_idx
         best_score = float("inf")
         best_model = None
         best_alpha = self.alphas[0]
@@ -145,6 +162,10 @@ class RidgeDeltaModel:
         self.best_alpha = best_alpha
         pred_all = self.model.predict(design)
         self.residual_rms = float(np.sqrt(np.mean(np.square(pred_all - y)))) if y.size else 0.0
+        pred_val = self.model.predict(design[val_idx])
+        self.validation_rms = float(np.sqrt(np.mean(np.square(pred_val - y[val_idx])))) if y.size else 0.0
+        pred_test = self.model.predict(design[test_idx])
+        self.test_rms = float(np.sqrt(np.mean(np.square(pred_test - y[test_idx])))) if y.size else 0.0
 
     def predict_delta(
         self,
@@ -243,6 +264,9 @@ def evaluate_forward_model(
         "target_direction_accuracy": float(np.mean(cosine > 0.0)),
         "null_effect_norm_mean": float(np.mean(np.linalg.norm(y_true, axis=1))),
     }
+    for name in ("validation_rms", "test_rms", "best_alpha"):
+        if hasattr(model, name):
+            diagnostics[name] = float(getattr(model, name))
     try:
         raw_r2 = r2_score(y_true, y_pred, multioutput="raw_values")
     except Exception:

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import os
 import platform
 import subprocess
+import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -39,6 +41,49 @@ def _git_commit() -> str:
         return "unknown"
 
 
+def _git_text(*args: str) -> str:
+    try:
+        return subprocess.check_output(
+            ["git", *args],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except Exception:
+        return "unknown"
+
+
+def _git_provenance() -> dict[str, Any]:
+    status = _git_text("status", "--short")
+    diff = _git_text("diff", "HEAD")
+    return {
+        "commit": _git_commit(),
+        "dirty": bool(status and status != "unknown"),
+        "status_short": status,
+        "diff_sha256": hashlib.sha256(diff.encode("utf-8")).hexdigest() if diff != "unknown" else "unknown",
+    }
+
+
+def _dependency_provenance() -> dict[str, Any]:
+    try:
+        freeze = subprocess.check_output(
+            [sys.executable, "-m", "pip", "freeze"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).splitlines()
+    except Exception:
+        freeze = []
+    payload = "\n".join(sorted(freeze))
+    return {
+        "pip_freeze": sorted(freeze),
+        "pip_freeze_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest(),
+    }
+
+
+def _relevant_env() -> dict[str, str]:
+    prefixes = ("CL_SDK_", "PYTHONHASHSEED", "OMP_", "MKL_", "OPENBLAS_")
+    return {key: value for key, value in os.environ.items() if key.startswith(prefixes)}
+
+
 def _protocol_record(protocol: ResetProtocol) -> dict[str, Any]:
     return {
         "protocol_id": protocol.id,
@@ -52,6 +97,30 @@ def _protocol_record(protocol: ResetProtocol) -> dict[str, Any]:
         "epoch_s": protocol.epoch_s,
         "pause_s": protocol.pause_s,
     }
+
+
+def _run_fingerprint(args: argparse.Namespace, protocols: list[ResetProtocol]) -> str:
+    payload = {
+        "args": {
+            key: str(value) if isinstance(value, Path) else value
+            for key, value in vars(args).items()
+            if key not in {"resume", "output_dir", "run_id", "progress_interval"}
+        },
+        "git": _git_provenance(),
+        "protocol_grid": [_protocol_record(protocol) for protocol in protocols],
+        "schema": "raw_trials.v2.trace_auc_proxy",
+    }
+    encoded = json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _validate_resume(output_dir: Path, fingerprint: str) -> None:
+    metadata_path = output_dir / "metadata.json"
+    if not metadata_path.exists():
+        raise RuntimeError("Cannot resume without metadata.json.")
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if metadata.get("run_fingerprint") != fingerprint:
+        raise RuntimeError("Cannot resume: run fingerprint differs from metadata.json.")
 
 
 def _run_grid_job(args: tuple[ExperimentConfig, ResetProtocol, int]) -> dict[str, Any]:
@@ -150,7 +219,7 @@ def _group_table(df: pd.DataFrame, by: str) -> pd.DataFrame:
         "path_erasure",
         "residual_performance",
         "savings",
-        "trace_auc",
+        "trace_auc_proxy",
         "health",
         "energy_cost",
     ]
@@ -183,7 +252,7 @@ def _write_report(
         "path_erasure",
         "residual_performance",
         "savings",
-        "trace_auc",
+        "trace_auc_proxy",
         "health",
         "energy_cost",
         "replicates",
@@ -198,7 +267,7 @@ def _write_report(
         "weight_erasure",
         "residual_performance",
         "savings",
-        "trace_auc",
+        "trace_auc_proxy",
         "health",
     ]
     lines = [
@@ -322,12 +391,18 @@ def main() -> None:
     args = _parse_args()
     run_id = args.run_id or datetime.now(timezone.utc).strftime("full_grid_%Y%m%dT%H%M%SZ")
     output_dir = args.output_dir or Path("experiments/snn_reset/results") / run_id
+    if args.resume and args.run_id is None and (output_dir / "metadata.json").exists():
+        previous = json.loads((output_dir / "metadata.json").read_text(encoding="utf-8"))
+        run_id = str(previous.get("run_id", run_id))
     output_dir.mkdir(parents=True, exist_ok=True)
 
     protocols = coarse_protocol_grid()
     if args.limit_protocols is not None:
         protocols = protocols[: args.limit_protocols]
     cfg = _make_config(args)
+    run_fingerprint = _run_fingerprint(args, protocols)
+    if args.resume:
+        _validate_resume(output_dir, run_fingerprint)
     jobs = [(cfg, protocol, int(seed)) for protocol in protocols for seed in args.seeds]
     if args.limit_jobs is not None:
         jobs = jobs[: args.limit_jobs]
@@ -344,6 +419,11 @@ def main() -> None:
         "run_id": run_id,
         "started_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": _git_commit(),
+        "git": _git_provenance(),
+        "dependencies": _dependency_provenance(),
+        "argv": sys.argv,
+        "environment": _relevant_env(),
+        "run_fingerprint": run_fingerprint,
         "machine": {
             "platform": platform.platform(),
             "processor": platform.processor(),

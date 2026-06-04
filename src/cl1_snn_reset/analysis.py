@@ -4,6 +4,10 @@ import numpy as np
 import pandas as pd
 
 
+def _trace_metric(df: pd.DataFrame) -> str:
+    return "trace_auc_proxy" if "trace_auc_proxy" in df.columns else "trace_auc"
+
+
 def pareto_front(
     df: pd.DataFrame,
     *,
@@ -11,7 +15,7 @@ def pareto_front(
     minimize: tuple[str, ...] = (
         "residual_performance",
         "savings",
-        "trace_auc",
+        "trace_auc_proxy",
         "criticality_distance",
         "energy_cost",
     ),
@@ -19,6 +23,7 @@ def pareto_front(
     """Return nondominated protocol rows."""
     if df.empty:
         return df.copy()
+    minimize = tuple(_trace_metric(df) if metric == "trace_auc_proxy" else metric for metric in minimize)
     values = df[list(maximize + minimize)].to_numpy(dtype=np.float64)
     signs = np.array([1.0] * len(maximize) + [-1.0] * len(minimize))
     score = values * signs
@@ -43,7 +48,7 @@ def rank_protocols(df: pd.DataFrame) -> pd.DataFrame:
         + 1.0 * ranked["health"]
         - 1.2 * ranked["residual_performance"]
         - 1.0 * ranked["savings"]
-        - 0.8 * (ranked["trace_auc"] - 0.5)
+        - 0.8 * (ranked[_trace_metric(ranked)] - 0.5)
         - 0.4 * ranked["criticality_distance"]
         - 0.05 * ranked["energy_cost"]
     )
@@ -75,13 +80,14 @@ def plot_pareto_summary(df: pd.DataFrame):
     import seaborn as sns
 
     front = pareto_front(df)
+    trace_metric = _trace_metric(df)
     fig, ax = plt.subplots(figsize=(7, 5))
-    sns.scatterplot(data=df, x="weight_erasure", y="trace_auc", color="0.7", ax=ax, label="screened")
+    sns.scatterplot(data=df, x="weight_erasure", y=trace_metric, color="0.7", ax=ax, label="screened")
     if not front.empty:
         sns.scatterplot(
             data=front,
             x="weight_erasure",
-            y="trace_auc",
+            y=trace_metric,
             hue="health",
             size="energy_cost",
             ax=ax,

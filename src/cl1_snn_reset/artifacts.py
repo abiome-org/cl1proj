@@ -22,7 +22,7 @@ class TrialArtifacts:
     protocol: ResetProtocol
     seed: int
     total_pulses: int
-    trace_auc: float
+    trace_auc_proxy: float
     path0: float
     path_trained: float
     path_post: float

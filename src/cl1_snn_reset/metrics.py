@@ -45,7 +45,7 @@ class TrialMetrics:
     residual_performance: float
     savings: float
     criticality_distance: float
-    trace_auc: float
+    trace_auc_proxy: float
     health: float
     energy_cost: float
     firing_rate_hz: float
@@ -169,10 +169,7 @@ def compute_trial_metrics(artifacts: TrialArtifacts) -> TrialMetrics:
     crit = criticality(artifacts.Apost, naive=artifacts.A0)
     health = health_metrics(
         artifacts.Apost,
-        duration_s=max(
-            artifacts.protocol.duration_s,
-            artifacts.Apost.duration_ms / 1000.0,
-        ),
+        duration_s=artifacts.Apost.duration_ms / 1000.0,
     )
     protocol = artifacts.protocol
     return TrialMetrics(
@@ -194,7 +191,7 @@ def compute_trial_metrics(artifacts: TrialArtifacts) -> TrialMetrics:
             artifacts.relearn.trials_to_criterion,
         ),
         criticality_distance        = crit.distance_from_naive,
-        trace_auc                   = float(artifacts.trace_auc),
+        trace_auc_proxy             = float(artifacts.trace_auc_proxy),
         health                      = health.score,
         energy_cost                 = protocol.total_charge_uC(artifacts.total_pulses),
         firing_rate_hz              = health.firing_rate_hz,

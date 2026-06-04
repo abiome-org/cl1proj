@@ -56,7 +56,7 @@ def summarize_sweep(df: pd.DataFrame) -> pd.DataFrame:
         "weight_erasure",
         "residual_performance",
         "savings",
-        "trace_auc",
+        "trace_auc_proxy",
         "criticality_distance",
         "health",
         "energy_cost",

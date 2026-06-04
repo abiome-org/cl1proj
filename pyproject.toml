@@ -38,10 +38,24 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "pytest",
+    "pytest-cov",
     "pytest_mock",
     "inline_snapshot[black]",
-    "pdoc"
+    "pdoc",
+    "ruff",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = ["src/cl"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["F401", "F841"]
 
 [project.urls]
 Homepage = "https://github.com/abiome-org/cl1proj"

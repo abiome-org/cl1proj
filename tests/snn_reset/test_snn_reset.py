@@ -96,7 +96,7 @@ def test_train_reset_relearn_trial_returns_required_metrics():
     assert row["total_pulses"] >= 0
     assert -10.0 < row["weight_erasure"] < 10.0
     assert 0.0 <= row["residual_performance"] <= 1.0
-    assert 0.5 <= row["trace_auc"] <= 1.0
+    assert 0.5 <= row["trace_auc_proxy"] <= 1.0
 
 
 def test_savings_score_handles_initial_criterion_edge_case():

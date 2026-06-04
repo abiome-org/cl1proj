@@ -95,7 +95,7 @@ def build_trial_artifacts(
         protocol=protocol,
         seed=seed,
         total_pulses=total_pulses,
-        trace_auc=trace_auc_proxy(baseline.activity, post.activity),
+        trace_auc_proxy=trace_auc_proxy(baseline.activity, post.activity),
         path0=baseline.path_strength,
         path_trained=trained.path_strength,
         path_post=post.path_strength,

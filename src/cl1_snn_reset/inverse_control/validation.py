@@ -100,7 +100,7 @@ def validate_candidate_against_no_reset(
         "validated_residual_performance": float(post_behavior),
         "validated_savings": float(savings),
         "validated_relearn_trials": int(relearn_trials),
-        "validated_trace_auc": _trace_feature(state_spec, stimmed_state),
+        "validated_trace_auc_proxy": _trace_feature(state_spec, stimmed_state),
         "validated_health": health.score,
         "validated_criticality_distance": crit.distance_from_naive,
         "validated_orthogonal_damage": _masked_norm(stimmed_state - target, off_task_mask),

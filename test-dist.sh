@@ -22,8 +22,8 @@ rm -rf .venv-test
 $PYTHON -m venv .venv-test
 source .venv-test/bin/activate
 $PYTHON -m pip install --upgrade pip
-$PYTHON -m pip install --upgrade dist/*.whl
-$PYTHON -m pip install '.[test]'
+WHEEL="$(echo dist/*.whl)"
+$PYTHON -m pip install --upgrade "${WHEEL}[test]"
 
 # And test.
 echo -e "\033[1mTesting:\033[0m"

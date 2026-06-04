@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import pickle
 import platform
 import subprocess
+import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -34,7 +37,7 @@ from cl1_snn_reset.inverse_control.reporting import (
     write_inverse_reset_report,
 )
 from cl1_snn_reset.inverse_control.stim_sampling import StimSamplingConfig
-from cl1_snn_reset.inverse_control.validation import validate_candidates_against_no_reset
+from cl1_snn_reset.inverse_control.validation import bootstrap_candidate_effects, validate_candidates_against_no_reset
 
 
 @dataclass
@@ -69,9 +72,9 @@ def main() -> None:
     _write_json(ctx.output_dir / "metadata.json", ctx.metadata)
     print(
         json.dumps(
-            {"event": "start", "run_id": ctx.run_id, "mode": ctx.mode, "output_dir": str(ctx.output_dir)},
-            flush=True,
-        )
+            {"event": "start", "run_id": ctx.run_id, "mode": ctx.mode, "output_dir": str(ctx.output_dir)}
+        ),
+        flush=True,
     )
 
     dataset = _run_dataset_stage(ctx, args)
@@ -102,6 +105,7 @@ def _parse_args() -> argparse.Namespace:
 
 def _build_run_context(args: argparse.Namespace) -> RunContext:
     payload = _load_yaml(args.config)
+    _validate_validation_config(payload.get("validation", {}))
     run_id = args.run_id or datetime.now(timezone.utc).strftime("inverse_reset_%Y%m%dT%H%M%SZ")
     output_root = Path(payload.get("run", {}).get("output_dir", "experiments/snn_reset/results"))
     output_dir = args.output_dir or output_root / run_id
@@ -122,6 +126,17 @@ def _build_run_context(args: argparse.Namespace) -> RunContext:
         target_mode=str(payload.get("target", {}).get("mode", "trace_removed")),
         stim_sampling=StimSamplingConfig.from_dict(payload.get("stim_sampling", {})),
     )
+
+
+def _validate_validation_config(validation: dict[str, Any]) -> None:
+    unsupported = (
+        "energy_matched_random",
+        "untrained_control",
+        "high_dose_positive_control",
+    )
+    enabled = [key for key in unsupported if bool(validation.get(key, False))]
+    if enabled:
+        raise ValueError(f"Unsupported validation controls enabled: {', '.join(enabled)}")
 
 
 def _run_dataset_stage(ctx: RunContext, args: argparse.Namespace) -> CausalDeltaDataset | None:
@@ -234,6 +249,16 @@ def _run_validate_stage(
         output_dir=ctx.output_dir / "validation",
         limit=int(ctx.payload.get("validation", {}).get("candidate_limit", len(candidates))),
     )
+    validation_config = ctx.payload.get("validation", {})
+    bootstrap_samples = int(validation_config.get("bootstrap_samples", 0))
+    if bootstrap_samples > 0:
+        bootstrap = bootstrap_candidate_effects(
+            validation,
+            samples=bootstrap_samples,
+            random_seed=int(ctx.payload.get("run", {}).get("random_seed", 123)),
+        )
+        bootstrap.to_csv(ctx.output_dir / "validation" / "bootstrap_candidate_effects.csv", index=False)
+        ctx.metadata["bootstrap_rows"] = int(len(bootstrap))
     write_inverse_reset_report(
         candidates=candidates,
         validation=validation,
@@ -307,6 +332,9 @@ def _fit_model(payload: dict[str, Any], dataset: CausalDeltaDataset) -> RidgeDel
     alphas = tuple(float(v) for v in model_config.get("regularization", {}).get("ridge_alpha", (0.1, 1.0, 10.0)))
     model = RidgeDeltaModel(
         alphas=alphas,
+        train_fraction=float(model_config.get("train_fraction", 0.75)),
+        validation_fraction=float(model_config.get("validation_fraction", 0.25)),
+        test_fraction=float(model_config.get("test_fraction", 0.0)),
         max_state_features=int(model_config.get("max_state_features", 64)),
         max_interaction_state_features=int(model_config.get("max_interaction_state_features", 24)),
         max_interaction_control_features=int(model_config.get("max_interaction_control_features", 24)),
@@ -443,6 +471,11 @@ def _metadata(
         "mode": mode,
         "started_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": _git_commit(),
+        "git": _git_provenance(),
+        "dependencies": _dependency_provenance(),
+        "argv": sys.argv,
+        "environment": _relevant_env(),
+        "config_sha256": hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest(),
         "machine": {
             "platform": platform.platform(),
             "processor": platform.processor(),
@@ -464,6 +497,49 @@ def _git_commit() -> str:
         ).strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "unknown"
+
+
+def _git_text(*args: str) -> str:
+    try:
+        return subprocess.check_output(
+            ["git", *args],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "unknown"
+
+
+def _git_provenance() -> dict[str, Any]:
+    status = _git_text("status", "--short")
+    diff = _git_text("diff", "HEAD")
+    return {
+        "commit": _git_commit(),
+        "dirty": bool(status and status != "unknown"),
+        "status_short": status,
+        "diff_sha256": hashlib.sha256(diff.encode("utf-8")).hexdigest() if diff != "unknown" else "unknown",
+    }
+
+
+def _dependency_provenance() -> dict[str, Any]:
+    try:
+        freeze = subprocess.check_output(
+            [sys.executable, "-m", "pip", "freeze"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).splitlines()
+    except Exception:
+        freeze = []
+    payload = "\n".join(sorted(freeze))
+    return {
+        "pip_freeze": sorted(freeze),
+        "pip_freeze_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest(),
+    }
+
+
+def _relevant_env() -> dict[str, str]:
+    prefixes = ("CL_SDK_", "PYTHONHASHSEED", "OMP_", "MKL_", "OPENBLAS_")
+    return {key: value for key, value in os.environ.items() if key.startswith(prefixes)}
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

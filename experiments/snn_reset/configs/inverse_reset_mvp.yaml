@@ -103,8 +103,8 @@ loss_weights:
 
 validation:
   paired_no_reset: true
-  energy_matched_random: true
-  untrained_control: true
-  high_dose_positive_control: true
+  energy_matched_random: false
+  untrained_control: false
+  high_dose_positive_control: false
   bootstrap_samples: 1000
   candidate_limit: 20
