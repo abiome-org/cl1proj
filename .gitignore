@@ -4,3 +4,18 @@
 **/.pytest_cache/
 **/__pycache__/
 .DS_Store
+
+# Per-synapse weight snapshots are large (~200 MB per run); keep local-only.
+**/weight_snapshots.npz
+
+# LaTeX build artifacts
+paper/main.pdf
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.synctex.gz

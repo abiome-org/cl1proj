@@ -205,6 +205,9 @@ def run_trained_control(args: tuple[ExperimentConfig, ResetProtocol, int, str]) 
             "post_minus_trained_norm": float(np.linalg.norm(post.weights - trained.weights)),
             "baseline_weight_norm": float(np.linalg.norm(baseline.weights)),
             "reset_window_neuron_spikes": int(reset_activity.total_neuron_spikes),
+            "_weights_baseline": baseline.weights.astype(np.float32, copy=False),
+            "_weights_trained": trained.weights.astype(np.float32, copy=False),
+            "_weights_post": post.weights.astype(np.float32, copy=False),
         }
     )
     return row
@@ -259,6 +262,8 @@ def run_untrained_control(args: tuple[ExperimentConfig, ResetProtocol, int, str]
         "path_delta": float(post.path_strength - baseline.path_strength),
         "trace_auc_proxy": float(trace_auc_proxy(baseline.activity, post.activity)),
         "reset_window_neuron_spikes": int(reset_activity.total_neuron_spikes),
+        "_weights_baseline": baseline.weights.astype(np.float32, copy=False),
+        "_weights_post": post.weights.astype(np.float32, copy=False),
     }
 
 
@@ -271,6 +276,28 @@ def run_parallel(jobs, worker, workers: int) -> pd.DataFrame:
         for future in as_completed(futures):
             rows.append(future.result())
     return pd.DataFrame(rows)
+
+
+def _split_weight_arrays(df: pd.DataFrame, label: str) -> dict[str, np.ndarray]:
+    """Pop underscore-prefixed weight arrays out of df, return as npz-ready dict.
+
+    Keys are encoded `{label}__{mode}__{protocol}__seed{seed}__{snapshot}`.
+    """
+    arrays: dict[str, np.ndarray] = {}
+    weight_cols = [col for col in df.columns if col.startswith("_weights_")]
+    if not weight_cols:
+        return arrays
+    for _, row in df.iterrows():
+        prefix = (
+            f"{label}__{row['control_mode']}"
+            f"__{row['source_protocol_id']}"
+            f"__seed{int(row['seed'])}"
+        )
+        for col in weight_cols:
+            snapshot = col[len("_weights_") :]
+            arrays[f"{prefix}__{snapshot}"] = np.asarray(row[col], dtype=np.float32)
+    df.drop(columns=weight_cols, inplace=True)
+    return arrays
 
 
 def summarize_reset_vs_no_reset(trained: pd.DataFrame) -> pd.DataFrame:
@@ -525,6 +552,7 @@ def main() -> None:
     ]
     trained = run_parallel(trained_jobs, run_trained_control, args.workers)
     trained = trained.sort_values(["source_protocol_id", "control_mode", "seed"])
+    trained_weights = _split_weight_arrays(trained, label="trained")
     trained.to_csv(output_dir / "trained_controls.csv", index=False)
 
     comparison = summarize_reset_vs_no_reset(trained)
@@ -538,7 +566,14 @@ def main() -> None:
     ]
     untrained = run_parallel(untrained_jobs, run_untrained_control, args.workers)
     untrained = untrained.sort_values(["source_protocol_id", "control_mode", "seed"])
+    untrained_weights = _split_weight_arrays(untrained, label="untrained")
     untrained.to_csv(output_dir / "untrained_controls.csv", index=False)
+
+    np.savez_compressed(
+        output_dir / "weight_snapshots.npz",
+        **trained_weights,
+        **untrained_weights,
+    )
 
     metadata["elapsed_s"] = perf_counter() - started
     metadata["finished_at_utc"] = datetime.now(timezone.utc).isoformat()
