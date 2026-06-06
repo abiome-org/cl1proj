@@ -1,0 +1,86 @@
+{
+  "figures": [
+    "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/forgetting_vs_savings.pdf",
+    "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_forgetting_vs_savings.pdf"
+  ],
+  "output_dir": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis",
+  "suite_dir": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z",
+  "tables": {
+    "protocol_direct_forget_savings_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_direct_forget_savings_front.csv",
+      "rows": 0
+    },
+    "protocol_eligible": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_eligible.csv",
+      "rows": 0
+    },
+    "protocol_forget_savings_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_forget_savings_front.csv",
+      "rows": 0
+    },
+    "protocol_forgetting_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_forgetting_front.csv",
+      "rows": 0
+    },
+    "protocol_relearning_summary": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_relearning_summary.csv",
+      "rows": 60
+    },
+    "protocol_score_drop_direct_forget_savings_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_score_drop_direct_forget_savings_front.csv",
+      "rows": 9
+    },
+    "protocol_score_drop_eligible": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_score_drop_eligible.csv",
+      "rows": 32
+    },
+    "protocol_score_drop_forget_savings_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_score_drop_forget_savings_front.csv",
+      "rows": 9
+    },
+    "protocol_score_drop_forgetting_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/protocol_score_drop_forgetting_front.csv",
+      "rows": 9
+    },
+    "raw_relearning_trials": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/raw_relearning_trials.csv",
+      "rows": 360
+    },
+    "task_direct_forget_savings_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_direct_forget_savings_front.csv",
+      "rows": 0
+    },
+    "task_eligible": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_eligible.csv",
+      "rows": 0
+    },
+    "task_forget_savings_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_forget_savings_front.csv",
+      "rows": 0
+    },
+    "task_forgetting_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_forgetting_front.csv",
+      "rows": 0
+    },
+    "task_protocol_relearning_summary": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_protocol_relearning_summary.csv",
+      "rows": 120
+    },
+    "task_score_drop_direct_forget_savings_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_score_drop_direct_forget_savings_front.csv",
+      "rows": 8
+    },
+    "task_score_drop_eligible": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_score_drop_eligible.csv",
+      "rows": 46
+    },
+    "task_score_drop_forget_savings_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_score_drop_forget_savings_front.csv",
+      "rows": 8
+    },
+    "task_score_drop_forgetting_front": {
+      "path": "experiments/snn_reset/results/snn_reset_relearning_exhaustive_20260606T070543Z/relearning_analysis/task_score_drop_forgetting_front.csv",
+      "rows": 8
+    }
+  }
+}
