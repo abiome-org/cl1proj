@@ -91,6 +91,12 @@ def forwarded_args(args: argparse.Namespace, *, task_output_dir: Path) -> list[s
         values.extend(["--criterion-score", str(args.criterion_score)])
     if args.stop_at_criterion:
         values.append("--stop-at-criterion")
+    if args.measure_relearning:
+        values.append("--measure-relearning")
+    if args.relearn_only_if_forgot:
+        values.append("--relearn-only-if-forgot")
+    if args.relearn_repetitions is not None:
+        values.extend(["--relearn-repetitions", str(args.relearn_repetitions)])
     if args.resume:
         values.append("--resume")
     values.extend(["--progress-interval", str(args.progress_interval)])

@@ -22,6 +22,7 @@ from cl1_snn_reset import (
     temporal_order_discrimination,
     weight_erasure_score,
 )
+from cl1_snn_reset.task_regimes.benchmark import forgetting_flags
 
 
 def small_culture(**overrides):
@@ -257,6 +258,116 @@ def test_regime_reset_trial_returns_task_and_weight_metrics():
     assert row["training_repetitions"] == 0
     assert row["trained_score"] > 0.0
     assert row["reset_minus_no_reset_weight_norm"] >= 0.0
+    assert "score_drop" in row
+    assert "criterion_forget" in row
+    assert row["made_forget"] == row["criterion_forget"]
+
+
+def test_forgetting_flags_separate_score_drop_from_criterion_forgetting():
+    partial_drop = forgetting_flags(reset_score=0.5, no_reset_score=1.0, criterion_score=0.35)
+    criterion_drop = forgetting_flags(reset_score=0.25, no_reset_score=1.0, criterion_score=0.35)
+    no_drop = forgetting_flags(reset_score=1.0, no_reset_score=1.0, criterion_score=0.35)
+
+    assert partial_drop == {
+        "score_drop": True,
+        "criterion_forget": False,
+        "made_forget": False,
+    }
+    assert criterion_drop == {
+        "score_drop": True,
+        "criterion_forget": True,
+        "made_forget": True,
+    }
+    assert no_drop == {
+        "score_drop": False,
+        "criterion_forget": False,
+        "made_forget": False,
+    }
+
+
+def test_regime_reset_trial_can_measure_relearning_savings():
+    cfg = small_culture(
+        n_neurons=224,
+        background_noise_mv=0.0,
+        spontaneous_rate_hz=0.0,
+    )
+    regime = conditioned_electrode_association(
+        input_channel=8,
+        target_channel=9,
+        input_current_uA=24.0,
+        target_current_uA=24.0,
+        max_training_repetitions=3,
+        eval_repetitions=2,
+    )
+    protocol = ResetProtocol(
+        beta=0,
+        duration_s=0.04,
+        current_uA=1.0,
+        pulse_width_us=160,
+        schedule="static",
+        spatial_mode="independent",
+        burst_rate_hz=10,
+    )
+
+    row = run_regime_reset_trial(
+        cfg,
+        regime,
+        protocol,
+        seed=5,
+        warmup_s=0.0,
+        training_repetitions=2,
+        eval_repetitions=2,
+        measure_relearning=True,
+        relearn_repetitions=2,
+    )
+
+    assert row["initial_trials_for_savings"] >= 0
+    assert row["relearn_measured"] is True
+    assert row["relearn_trials"] >= 0
+    assert "relearn_history" in row
+    assert np.isfinite(row["relearn_savings"])
+
+
+def test_relearn_only_if_forgot_records_explicit_skip():
+    cfg = small_culture(
+        n_neurons=224,
+        background_noise_mv=0.0,
+        spontaneous_rate_hz=0.0,
+    )
+    regime = evoked_channel_response(
+        input_channel=8,
+        target_channel=8,
+        input_current_uA=20.0,
+        eval_repetitions=2,
+    )
+    protocol = ResetProtocol(
+        beta=0,
+        duration_s=0.0,
+        current_uA=0.0,
+        pulse_width_us=160,
+        schedule="static",
+        spatial_mode="independent",
+        burst_rate_hz=10,
+    )
+
+    row = run_regime_reset_trial(
+        cfg,
+        regime,
+        protocol,
+        seed=5,
+        warmup_s=0.0,
+        eval_repetitions=2,
+        measure_relearning=True,
+        relearn_only_if_forgot=True,
+        relearn_repetitions=2,
+    )
+
+    assert row["score_drop"] is False
+    assert row["criterion_forget"] is False
+    assert row["relearn_measured"] is False
+    assert row["relearn_skipped_reason"] == "did_not_forget"
+    assert np.isnan(row["relearn_trials"])
+    assert np.isnan(row["relearn_savings"])
 
 
 def test_savings_score_handles_initial_criterion_edge_case():

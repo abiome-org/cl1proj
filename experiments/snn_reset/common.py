@@ -26,6 +26,20 @@ from cl1_snn_reset import (
 
 EXPERIMENT_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = EXPERIMENT_DIR / "results"
+TaskJob = tuple[
+    CultureConfig,
+    TaskRegime,
+    list[ResetProtocol],
+    int,
+    float,
+    float,
+    int | None,
+    int | None,
+    bool,
+    bool,
+    bool,
+    int | None,
+]
 RESUME_IGNORED_CONFIG_KEYS = {
     "executor",
     "output_dir",
@@ -70,6 +84,9 @@ def add_common_task_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--training-repetitions", type=int, default=None)
     parser.add_argument("--eval-repetitions", type=int, default=None)
     parser.add_argument("--stop-at-criterion", action="store_true")
+    parser.add_argument("--measure-relearning", action="store_true")
+    parser.add_argument("--relearn-only-if-forgot", action="store_true")
+    parser.add_argument("--relearn-repetitions", type=int, default=None)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--progress-interval", type=int, default=25)
     parser.add_argument("--input-current-uA", type=float, default=120.0)
@@ -152,7 +169,7 @@ def task_jobs(
     protocols: list[ResetProtocol],
     args: argparse.Namespace,
     completed: set[tuple[str, int]] | None = None,
-) -> list[tuple[CultureConfig, TaskRegime, list[ResetProtocol], int, float, float, int | None, int | None, bool]]:
+) -> list[TaskJob]:
     completed = completed or set()
     jobs = []
     for seed in args.seeds:
@@ -174,14 +191,15 @@ def task_jobs(
                 args.training_repetitions,
                 args.eval_repetitions,
                 bool(args.stop_at_criterion),
+                bool(args.measure_relearning),
+                bool(args.relearn_only_if_forgot),
+                args.relearn_repetitions,
             )
         )
     return jobs
 
 
-def run_task_job(
-    job: tuple[CultureConfig, TaskRegime, list[ResetProtocol], int, float, float, int | None, int | None, bool],
-) -> list[dict[str, Any]]:
+def run_task_job(job: TaskJob) -> list[dict[str, Any]]:
     (
         culture,
         regime,
@@ -192,6 +210,9 @@ def run_task_job(
         training_repetitions,
         eval_repetitions,
         stop_at_criterion,
+        measure_relearning,
+        relearn_only_if_forgot,
+        relearn_repetitions,
     ) = job
     return run_regime_seed_protocols(
         culture,
@@ -203,6 +224,9 @@ def run_task_job(
         training_repetitions=training_repetitions,
         eval_repetitions=eval_repetitions,
         stop_at_criterion=bool(stop_at_criterion),
+        measure_relearning=bool(measure_relearning),
+        relearn_only_if_forgot=bool(relearn_only_if_forgot),
+        relearn_repetitions=relearn_repetitions,
     )
 
 

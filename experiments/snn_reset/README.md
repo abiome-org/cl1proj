@@ -17,6 +17,7 @@ clones that same state across the protocol grid.
 | `task_temporal_order_discrimination.py` | Same electrodes, different temporal order |
 | `run_grid.py` | Central runner that launches the task scripts |
 | `figures.py` | Figure generator for completed modular grid outputs |
+| `relearning_analysis.py` | Pareto analysis for forgetting versus relearning savings |
 
 ## Validated Grid
 
@@ -41,3 +42,22 @@ part of the validated learned-task grid.
   --input-current-uA 120 \
   --target-current-uA 120
 ```
+
+## Relearning Round
+
+Use `--measure-relearning` to retrain each reset branch after the immediate
+post-reset assay and record relearning trials plus savings. The strict front
+uses criterion-level forgetting: no-reset at or above criterion and reset below
+criterion. A separate score-drop front is also emitted for partial performance
+drops that do not cross criterion.
+
+```bash
+.venv-uv/bin/python experiments/snn_reset/run_grid.py \
+  --tasks conditioned_electrode_association pattern_discrimination \
+  --measure-relearning \
+  --relearn-repetitions 80
+```
+
+`--relearn-only-if-forgot` is an optional screening shortcut. Do not use it for
+the final savings run unless the analysis explicitly treats savings as
+conditional on criterion-level forgetting.

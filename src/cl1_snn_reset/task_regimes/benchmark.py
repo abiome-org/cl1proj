@@ -11,7 +11,7 @@ import pandas as pd
 
 from ..config import CultureConfig
 from ..experiment import apply_reset_protocol
-from ..metrics import residual_trace_correlation, weight_erasure_score
+from ..metrics import residual_trace_correlation, savings_score, weight_erasure_score
 from ..network import build_network
 from ..protocols import ResetProtocol
 from .execution import evaluate_regime, train_regime
@@ -27,6 +27,27 @@ def _protocol_row(protocol: ResetProtocol) -> dict[str, Any]:
         "duration_s": float(protocol.duration_s),
         "current_uA": float(protocol.current_uA),
         "pulse_width_us": int(protocol.pulse_width_us),
+    }
+
+
+def first_criterion_repetition(history: tuple[float, ...], criterion_score: float) -> int | None:
+    for repetition, score in enumerate(history):
+        if float(score) >= float(criterion_score):
+            return int(repetition)
+    return None
+
+
+def _history_row(history: tuple[float, ...]) -> str:
+    return "|".join(f"{value:.6g}" for value in history)
+
+
+def forgetting_flags(*, reset_score: float, no_reset_score: float, criterion_score: float) -> dict[str, bool]:
+    score_drop = float(reset_score) < float(no_reset_score)
+    criterion_forget = score_drop and float(no_reset_score) >= float(criterion_score) > float(reset_score)
+    return {
+        "score_drop": bool(score_drop),
+        "criterion_forget": bool(criterion_forget),
+        "made_forget": bool(criterion_forget),
     }
 
 
@@ -126,6 +147,12 @@ def prepare_regime_seed_state(
     )
     trained_weights = net.weights_vector()
     trained_eval = evaluate_regime(net, regime, repetitions=eval_repetitions)
+    initial_trials_to_criterion = first_criterion_repetition(training_history, regime.criterion_score)
+    initial_trials_for_savings = (
+        int(initial_trials_to_criterion)
+        if initial_trials_to_criterion is not None
+        else int(trained_repetitions)
+    )
 
     naive_weight_control_net = copy.deepcopy(net)
     naive_weight_control_net.set_weights(baseline_weights)
@@ -145,9 +172,15 @@ def prepare_regime_seed_state(
         "trained_eval": trained_eval,
         "naive_weight_control_eval": naive_weight_control_eval,
         "training_repetitions": int(trained_repetitions),
+        "initial_trials_to_criterion": (
+            int(initial_trials_to_criterion)
+            if initial_trials_to_criterion is not None
+            else -1
+        ),
+        "initial_trials_for_savings": int(initial_trials_for_savings),
         "training_reached_criterion": bool(trained_eval.score >= regime.criterion_score),
         "training_stop_at_criterion": bool(stop_at_criterion),
-        "training_history": "|".join(f"{value:.6g}" for value in training_history),
+        "training_history": _history_row(training_history),
         "training_elapsed_s": perf_counter() - training_started,
         "consolidation_rest_s": float(max(float(consolidation_rest_s), 0.0)),
         "consolidation_neuron_spikes": int(consolidation_activity.total_neuron_spikes),
@@ -159,6 +192,9 @@ def evaluate_protocol_from_seed_state(
     protocol: ResetProtocol,
     *,
     eval_repetitions: int | None = None,
+    measure_relearning: bool = False,
+    relearn_only_if_forgot: bool = False,
+    relearn_repetitions: int | None = None,
 ) -> dict[str, Any]:
     """Run one reset/no-reset protocol pair from a cached trained seed state."""
     seed = int(seed_state["seed"])
@@ -181,6 +217,45 @@ def evaluate_protocol_from_seed_state(
     baseline_eval = seed_state["baseline_eval"]
     trained_eval = seed_state["trained_eval"]
     naive_weight_control_eval = seed_state["naive_weight_control_eval"]
+    relearning_row: dict[str, Any] = {}
+    flags = forgetting_flags(
+        reset_score=reset_eval.score,
+        no_reset_score=no_reset_eval.score,
+        criterion_score=regime.criterion_score,
+    )
+    should_relearn = measure_relearning and (flags["made_forget"] or not relearn_only_if_forgot)
+    if measure_relearning and not should_relearn:
+        relearning_row = {
+            "relearn_measured": False,
+            "relearn_skipped_reason": "did_not_forget",
+            "relearn_trials": np.nan,
+            "relearn_score": np.nan,
+            "relearn_reached_criterion": np.nan,
+            "relearn_savings": np.nan,
+            "relearn_history": "",
+            "relearn_elapsed_s": 0.0,
+        }
+    if should_relearn:
+        relearning_started = perf_counter()
+        relearn_net = copy.deepcopy(reset_net)
+        relearn_trials, relearn_eval, relearn_history = train_regime(
+            relearn_net,
+            regime,
+            max_repetitions=relearn_repetitions,
+            eval_repetitions=eval_repetitions,
+            stop_at_criterion=True,
+        )
+        initial_trials = int(seed_state["initial_trials_for_savings"])
+        relearning_row = {
+            "relearn_measured": True,
+            "relearn_skipped_reason": "",
+            "relearn_trials": int(relearn_trials),
+            "relearn_score": float(relearn_eval.score),
+            "relearn_reached_criterion": bool(relearn_eval.score >= regime.criterion_score),
+            "relearn_savings": savings_score(initial_trials, int(relearn_trials)),
+            "relearn_history": _history_row(relearn_history),
+            "relearn_elapsed_s": float(perf_counter() - relearning_started),
+        }
 
     return {
         "task_name": seed_state["task_name"],
@@ -194,6 +269,8 @@ def evaluate_protocol_from_seed_state(
             no_reset_eval=no_reset_eval,
         ),
         "training_repetitions": int(seed_state["training_repetitions"]),
+        "initial_trials_to_criterion": int(seed_state["initial_trials_to_criterion"]),
+        "initial_trials_for_savings": int(seed_state["initial_trials_for_savings"]),
         "training_reached_criterion": bool(seed_state["training_reached_criterion"]),
         "training_stop_at_criterion": bool(seed_state["training_stop_at_criterion"]),
         "training_history": seed_state["training_history"],
@@ -203,6 +280,9 @@ def evaluate_protocol_from_seed_state(
         "reset_score": float(reset_eval.score),
         "no_reset_score": float(no_reset_eval.score),
         "reset_minus_no_reset_score": float(reset_eval.score - no_reset_eval.score),
+        "forgetting_score": float(no_reset_eval.score - reset_eval.score),
+        "criterion_score": float(regime.criterion_score),
+        **flags,
         "reset_positive_response_probability": float(reset_eval.positive_response_probability),
         "no_reset_positive_response_probability": float(no_reset_eval.positive_response_probability),
         "reset_negative_response_probability": float(reset_eval.negative_response_probability),
@@ -223,6 +303,7 @@ def evaluate_protocol_from_seed_state(
         **reset_eval.to_row("reset"),
         **no_reset_eval.to_row("no_reset"),
         **naive_weight_control_eval.to_row("naive_weight_control"),
+        **relearning_row,
     }
 
 
@@ -237,6 +318,9 @@ def run_regime_reset_trial(
     training_repetitions: int | None = None,
     eval_repetitions: int | None = None,
     stop_at_criterion: bool = False,
+    measure_relearning: bool = False,
+    relearn_only_if_forgot: bool = False,
+    relearn_repetitions: int | None = None,
 ) -> dict[str, Any]:
     """Run one train, reset/no-reset, and post-task comparison for a task regime."""
     seed_state = prepare_regime_seed_state(
@@ -253,6 +337,9 @@ def run_regime_reset_trial(
         seed_state,
         protocol,
         eval_repetitions=eval_repetitions,
+        measure_relearning=measure_relearning,
+        relearn_only_if_forgot=relearn_only_if_forgot,
+        relearn_repetitions=relearn_repetitions,
     )
 
 
@@ -267,6 +354,9 @@ def run_regime_seed_protocols(
     training_repetitions: int | None = None,
     eval_repetitions: int | None = None,
     stop_at_criterion: bool = False,
+    measure_relearning: bool = False,
+    relearn_only_if_forgot: bool = False,
+    relearn_repetitions: int | None = None,
 ) -> list[dict[str, Any]]:
     """Train one seed once, then evaluate every requested protocol clone."""
     seed_state = prepare_regime_seed_state(
@@ -286,6 +376,9 @@ def run_regime_seed_protocols(
             seed_state,
             protocol,
             eval_repetitions=eval_repetitions,
+            measure_relearning=measure_relearning,
+            relearn_only_if_forgot=relearn_only_if_forgot,
+            relearn_repetitions=relearn_repetitions,
         )
         row["job_elapsed_s"] = perf_counter() - started
         rows.append(row)
@@ -303,6 +396,9 @@ def _run_seed_bundle(
         int | None,
         int | None,
         bool,
+        bool,
+        bool,
+        int | None,
     ],
 ) -> list[dict[str, Any]]:
     (
@@ -315,6 +411,9 @@ def _run_seed_bundle(
         training_repetitions,
         eval_repetitions,
         stop_at_criterion,
+        measure_relearning,
+        relearn_only_if_forgot,
+        relearn_repetitions,
     ) = args
     return run_regime_seed_protocols(
         culture,
@@ -326,6 +425,9 @@ def _run_seed_bundle(
         training_repetitions=training_repetitions,
         eval_repetitions=eval_repetitions,
         stop_at_criterion=stop_at_criterion,
+        measure_relearning=measure_relearning,
+        relearn_only_if_forgot=relearn_only_if_forgot,
+        relearn_repetitions=relearn_repetitions,
     )
 
 
@@ -340,6 +442,9 @@ def run_regime_grid(
     training_repetitions: int | None = None,
     eval_repetitions: int | None = None,
     stop_at_criterion: bool = False,
+    measure_relearning: bool = False,
+    relearn_only_if_forgot: bool = False,
+    relearn_repetitions: int | None = None,
     workers: int = 1,
 ) -> pd.DataFrame:
     """Run a protocol x seed grid while training each seed only once."""
@@ -354,6 +459,9 @@ def run_regime_grid(
             training_repetitions,
             eval_repetitions,
             stop_at_criterion,
+            measure_relearning,
+            relearn_only_if_forgot,
+            relearn_repetitions,
         )
         for seed in seeds
     ]
@@ -385,10 +493,17 @@ def summarize_regime_grid(df: pd.DataFrame) -> pd.DataFrame:
         "trained_score",
         "training_score_delta",
         "training_repetitions",
+        "initial_trials_to_criterion",
+        "initial_trials_for_savings",
         "training_reached_criterion",
         "reset_score",
         "no_reset_score",
         "reset_minus_no_reset_score",
+        "forgetting_score",
+        "criterion_score",
+        "score_drop",
+        "criterion_forget",
+        "made_forget",
         "naive_weight_control_score",
         "naive_weight_control_minus_trained_score",
         "naive_weight_control_minus_no_reset_score",
@@ -404,6 +519,12 @@ def summarize_regime_grid(df: pd.DataFrame) -> pd.DataFrame:
         "erasure_projection_reset_vs_no_reset",
         "reset_window_neuron_spikes_delta",
         "consolidation_neuron_spikes",
+        "relearn_trials",
+        "relearn_measured",
+        "relearn_score",
+        "relearn_reached_criterion",
+        "relearn_savings",
+        "relearn_elapsed_s",
     ]
     aggregations: dict[str, Any] = {
         field: "first"
