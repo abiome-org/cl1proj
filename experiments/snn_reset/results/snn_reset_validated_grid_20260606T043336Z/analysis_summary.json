@@ -1,0 +1,14 @@
+{
+  "rows": 540,
+  "tasks": [
+    "conditioned_electrode_association",
+    "evoked_channel_response",
+    "pattern_discrimination"
+  ],
+  "protocols": 60,
+  "seeds": [
+    1,
+    3,
+    4
+  ]
+}

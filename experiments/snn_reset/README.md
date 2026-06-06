@@ -1,46 +1,43 @@
-# SNN reset research experiments
+# SNN reset grid search
 
-Large studies for protocol screening and reset control diagnostics. These
-scripts import `cl1_snn_reset` and write artifacts under `results/` in this
-directory. They do not modify `src/`.
+Each task is a separate script; `run_grid.py` calls those
+task scripts and collects summaries under one result folder.
+
+The runner trains each task/seed once, lets the trained state settle, and then
+clones that same state across the protocol grid.
 
 ## Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `full_grid_search.py` | Calibrated coarse protocol grid (e.g. 10k neurons, many protocols × seeds) |
-| `control_checks.py` | Reset vs no-reset and noise/actuator diagnostics on representative protocols |
+| Script | Task |
+|--------|------|
+| `task_evoked_channel_response.py` | Direct evoked channel response |
+| `task_conditioned_electrode_association.py` | A to B conditioned association |
+| `task_delayed_conditioned_response.py` | Delayed conditioned response |
+| `task_pattern_discrimination.py` | Two-pattern target discrimination |
+| `task_temporal_order_discrimination.py` | Same electrodes, different temporal order |
+| `run_grid.py` | Central runner that launches the task scripts |
+| `figures.py` | Figure generator for completed modular grid outputs |
 
-## Running
+## Validated Grid
+
+The current default protocol grid has 60 protocols. Tasks are
+
+- `conditioned_electrode_association`
+- `pattern_discrimination`
+
+`evoked_channel_response` is a sensory responsiveness control. The delayed and
+temporal-order tasks remain available as task-viability checks, but they were not
+part of the validated learned-task grid.
+
+## Smoke Run
 
 ```bash
-.venv-uv/bin/python experiments/snn_reset/full_grid_search.py
-.venv-uv/bin/python experiments/snn_reset/control_checks.py
+.venv-uv/bin/python experiments/snn_reset/run_grid.py \
+  --neurons 192 \
+  --seeds 1 \
+  --limit-protocols 1 \
+  --training-repetitions 1 \
+  --eval-repetitions 2 \
+  --input-current-uA 120 \
+  --target-current-uA 120
 ```
-
-Use `--resume` on `full_grid_search.py` to continue an interrupted grid into the same
-`results/<run_id>/` folder.
-
-## Results
-
-Generated outputs live in `experiments/snn_reset/results/`. A typical full-grid
-run produces:
-
-| File | Contents |
-|------|----------|
-| `metadata.json` | Git commit, machine info, grid definition, job counts |
-| `raw_trials.csv` | One row per protocol×seed trial (resumable) |
-| `summary.csv` | Protocol-level aggregates across seeds |
-| `ranked.csv` | Scalar `reset_score` sort for quick inspection |
-| `pareto.csv` | Nondominated protocols on erasure/health/cost objectives |
-| `report.md` | Human-readable summary of the run |
-
-Published notes for the calibrated 10k grid are in
-[`docs/snn_reset/full_grid_10k_calibrated_20260602.md`](../../docs/snn_reset/full_grid_10k_calibrated_20260602.md).
-The control-checks study is documented in
-[`docs/snn_reset/control_checks.md`](../../docs/snn_reset/control_checks.md).
-
-## Regression
-
-Fast smoke, benchmark, and learned inverse-reset controllability entrypoints live
-in `experiments/regression1/`.

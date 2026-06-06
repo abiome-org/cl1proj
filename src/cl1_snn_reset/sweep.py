@@ -62,7 +62,11 @@ def summarize_sweep(df: pd.DataFrame) -> pd.DataFrame:
         "energy_cost",
         "path_erasure",
     ]
-    aggregations = {field: "first" for field in protocol_fields if field in df.columns}
+    aggregations = {
+        field: ("mean" if field == "total_pulses" else "first")
+        for field in protocol_fields
+        if field in df.columns
+    }
     aggregations |= {metric: "mean" for metric in metrics}
     aggregations["seed"] = "count"
     return (

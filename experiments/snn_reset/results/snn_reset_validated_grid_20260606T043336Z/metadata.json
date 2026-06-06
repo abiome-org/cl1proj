@@ -1,0 +1,56 @@
+{
+  "argv": [
+    "experiments/snn_reset/run_grid.py",
+    "--output-root",
+    "experiments/snn_reset/results/snn_reset_validated_grid_20260606T043336Z",
+    "--tasks",
+    "evoked_channel_response",
+    "conditioned_electrode_association",
+    "pattern_discrimination",
+    "--neurons",
+    "10000",
+    "--seeds",
+    "1",
+    "3",
+    "4",
+    "--training-repetitions",
+    "60",
+    "--eval-repetitions",
+    "8",
+    "--workers",
+    "3",
+    "--executor",
+    "process",
+    "--progress-interval",
+    "30"
+  ],
+  "elapsed_s": 964.8657317089965,
+  "git_commit": "f267b19f779272c69f12a35e6fbb8098275a4abd",
+  "output_root": "experiments/snn_reset/results/snn_reset_validated_grid_20260606T043336Z",
+  "outputs": [
+    "metadata.json",
+    "all_task_summary.csv"
+  ],
+  "run_id": "snn_reset_grid_search_20260606T043345Z",
+  "started_at_utc": "2026-06-06T04:49:50.297766+00:00",
+  "tasks": [
+    {
+      "output_dir": "experiments/snn_reset/results/snn_reset_validated_grid_20260606T043336Z/evoked_channel_response",
+      "returncode": 0,
+      "script": "/Users/j8ck/Documents/cl1proj/experiments/snn_reset/task_evoked_channel_response.py",
+      "task": "evoked_channel_response"
+    },
+    {
+      "output_dir": "experiments/snn_reset/results/snn_reset_validated_grid_20260606T043336Z/conditioned_electrode_association",
+      "returncode": 0,
+      "script": "/Users/j8ck/Documents/cl1proj/experiments/snn_reset/task_conditioned_electrode_association.py",
+      "task": "conditioned_electrode_association"
+    },
+    {
+      "output_dir": "experiments/snn_reset/results/snn_reset_validated_grid_20260606T043336Z/pattern_discrimination",
+      "returncode": 0,
+      "script": "/Users/j8ck/Documents/cl1proj/experiments/snn_reset/task_pattern_discrimination.py",
+      "task": "pattern_discrimination"
+    }
+  ]
+}

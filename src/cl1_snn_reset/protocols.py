@@ -91,6 +91,7 @@ def _colored_events(
     rng: np.random.Generator,
     duration_s: float | None = None,
     beta: float | None = None,
+    rate_hz: float | None = None,
 ) -> list[StimEvent]:
     return generate_colored_events(
         beta           = protocol.beta if beta is None else beta,
@@ -98,7 +99,7 @@ def _colored_events(
         n_channels     = n_channels,
         current_uA     = protocol.current_uA,
         pulse_width_us = protocol.pulse_width_us,
-        rate_hz        = protocol.burst_rate_hz or _default_rate(protocol.beta if beta is None else beta),
+        rate_hz        = rate_hz or protocol.burst_rate_hz or _default_rate(protocol.beta if beta is None else beta),
         spatial_mode   = protocol.spatial_mode,
         rng            = rng,
     )
@@ -143,16 +144,52 @@ def protocol_events(
                 phases         = event.phases,
             ))
         return ramped
+    if schedule == "chirp":
+        chunks = max(4, min(24, int(np.ceil(protocol.duration_s / 0.5))))
+        chunk_s = protocol.duration_s / chunks
+        start_rate = protocol.burst_rate_hz or _default_rate(protocol.beta)
+        stop_rate = max(start_rate * 4.0, start_rate + 120.0)
+        events: list[StimEvent] = []
+        for index in range(chunks):
+            fraction = index / max(chunks - 1, 1)
+            rate = start_rate + fraction * (stop_rate - start_rate)
+            chunk = _colored_events(
+                protocol,
+                n_channels=n_channels,
+                rng=rng,
+                duration_s=chunk_s,
+                rate_hz=rate,
+            )
+            events.extend(shift_stim_events(chunk, int(round(index * chunk_s * 1_000_000))))
+        return events
+    if schedule == "gated_burst":
+        epoch_s = protocol.epoch_s or 0.25
+        pause_s = protocol.pause_s or 0.75
+        burst_rate = protocol.burst_rate_hz or 240.0
+        events: list[StimEvent] = []
+        t_s = 0.0
+        while t_s < protocol.duration_s:
+            active = min(epoch_s, protocol.duration_s - t_s)
+            chunk = _colored_events(
+                protocol,
+                n_channels=n_channels,
+                rng=rng,
+                duration_s=active,
+                rate_hz=burst_rate,
+            )
+            events.extend(shift_stim_events(chunk, int(round(t_s * 1_000_000))))
+            t_s += active + pause_s
+        return events
     raise ValueError(f"Unknown reset schedule: {protocol.schedule}")
 
 
 def coarse_protocol_grid() -> list[ResetProtocol]:
-    """Initial coarse grid for reset protocol screening."""
-    beta_values = [-2, -1, 0, 1, 2]
-    spatial_modes = ["shared", "independent", "correlated", "phase_shifted"]
-    schedules = ["static", "alternating_blue_red", "epoch_pause"]
-    durations = [0.75, 1.5, 3.0]
-    currents = [0.8, 1.6, 2.6]
+    """Calibrated reset grid for SNN task-null perturbation screening."""
+    beta_values = [-2, 0, 2]
+    spatial_modes = ["shared", "correlated"]
+    schedules = ["static", "alternating_blue_red", "epoch_pause", "chirp", "gated_burst"]
+    durations = [3.0]
+    currents = [10.0, 50.0]
     protocols: list[ResetProtocol] = []
     for beta, spatial_mode, schedule, duration, current in product(
         beta_values,

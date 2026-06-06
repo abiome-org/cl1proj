@@ -15,7 +15,9 @@
 - Packages: `src/cl1_snn_reset/` (reset library), `src/cl1_clsdk_bridge/` (SDK twin wiring), `src/cl/` (vendored CL SDK); shims include `cl.snn_reset` and `cl.twin.ResetSNNAdapter`.
 - Python ≥3.12; local virtualenv at `.venv-uv`.
 - Large sweep artifacts live under `experiments/snn_reset/results/` (e.g. `full_grid_10k_calibrated_20260602T042050Z` with `summary.csv`, `pareto.csv`, `ranked.csv`).
-- Reset temporal color is set by `beta` in `noise.py` (−2 violet-like through 2 red/brown); calibrated-grid Pareto candidates were all `beta=2` (red), `epoch_pause`, `independent`, 0.8 µA, differing mainly in duration.
+- The first calibrated SNN reset grid (`full_grid_10k_calibrated_20260602T042050Z`) is invalidated by the discovered protocol/actuator error. Do not cite it as a valid experimental result in papers, docs, or external writeups; mention it only as internal debugging/forensics with explicit invalidated status.
+- The 2026-06-06 task assay diagnostics invalidated the old baseline task endpoint: input and sham trials matched, and destructive direct-weight controls did not change that measured score. The replacement `experiments/snn_reset` regime validates `conditioned_electrode_association` and `pattern_discrimination` with baseline 0, trained 1, and naive-weight control 0 across seeds 1/3/4; `evoked_channel_response` is a sensory control, while delayed/order tasks are task-viability checks unless redesigned.
+- Reset temporal color is set by `beta` in `noise.py` (−2 violet-like through 2 red/brown); in the invalidated first grid, apparent Pareto candidates were all `beta=2` (red), `epoch_pause`, `independent`, 0.8 µA, differing mainly in duration.
 - Surrogate reset runs use `CL_SDK_SIM_MODE=surrogate` with `CL_SDK_TWIN_DYNAMICS` in `snn_reset` / `reset_snn` / `brian2_reset` (canonical helpers in `cl1_clsdk_bridge`).
 - Protocol ranking uses multi-objective `pareto_front()` in `cl1_snn_reset.analysis` (weight erasure, health, path erasure, residual performance, savings, trace AUC, criticality distance, energy cost).
 
@@ -25,7 +27,7 @@
 - **`experiments/`** holds runnable studies. Each subdirectory has a single `README.md` (scripts + results layout). Do not edit `src/` when adding or running experiments.
 - **Imports:** experiments use `import cl1_snn_reset` / `cl1_clsdk_bridge` public APIs (`__init__` exports and documented subpackages such as `cl1_snn_reset.inverse_control`). Do not import private `_` symbols or reach into internal modules when a public export exists.
 - **`experiments/regression1/`** — `smoke.py`, `benchmark.py`, `learned_inverse_reset.py`, inverse-reset YAML configs; outputs under `experiments/regression1/results/`; suitable for quick checks and controllability regressions.
-- **`experiments/snn_reset/`** — `full_grid_search.py`, `control_checks.py`; outputs under `experiments/snn_reset/results/`.
+- **`experiments/snn_reset/`** — modular SNN reset grid regime: `run_grid.py` launches one script per task (`task_evoked_channel_response.py`, `task_conditioned_electrode_association.py`, `task_delayed_conditioned_response.py`, `task_pattern_discrimination.py`, `task_temporal_order_discrimination.py`); outputs under `experiments/snn_reset/results/`.
 - **`tests/`** — fast pytest for library and bridge; may use internal modules for white-box tests.
 
 ## Library API (cl1_snn_reset)
