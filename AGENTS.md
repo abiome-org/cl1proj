@@ -33,4 +33,4 @@
 
 ## Library API (cl1_snn_reset)
 
-Prefer root imports: `run_trial`, `capture_phase`, `build_trial_artifacts`, `ResetProtocol`, `coarse_protocol_grid`, `run_sweep`, `pareto_front`, `rank_protocols`. Plotting: `cl1_snn_reset.analysis.plot_*`.
+Prefer root imports: `run_trial`, `capture_phase`, `build_trial_artifacts`, `ResetProtocol`, `coarse_protocol_grid`, `run_sweep`, `pareto_front`, `pareto_mask`, `rank_protocols`. Suite result IO/analysis (shared by experiment figure scripts): `load_suite`, `validate_suite_dir`, `energy_cost_uC` (in `cl1_snn_reset.reporting`). Plotting: `cl1_snn_reset.analysis.plot_*`.

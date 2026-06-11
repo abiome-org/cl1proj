@@ -12,7 +12,7 @@ aggregated into `all_task_summary.csv`.
 | `tasks.py` | All task definitions in one place (`TASK_BUILDERS` registry); run one task with `tasks.py --task <name>` |
 | `run_grid.py` | Suite runner: picks tasks, gives each its own output dir, aggregates summaries |
 | `common.py` | Shared CLI args, resume logic, and `run_task_grid` (one task's protocol × seed grid) |
-| `figlib.py` | Shared figure support: palette, style, suite IO, loaders, summaries, plot helpers |
+| `figlib.py` | Figure presentation support: palette, style, labels, plot helpers (data loading is `cl1_snn_reset.load_suite`) |
 | `figures/` | One script per paper figure (see AGENTS.md); each imports `figlib` |
 | `relearning_analysis.py` | Pareto analysis for forgetting versus relearning savings |
 

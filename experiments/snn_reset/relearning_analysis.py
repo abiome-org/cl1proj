@@ -5,19 +5,18 @@ import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
+
+from cl1_snn_reset import energy_cost_uC, pareto_mask, validate_suite_dir
 
 from figlib import (
     PALETTE,
     TASK_LABELS,
     apply_style,
     default_output_dir,
-    energy_cost_uC,
     latest_suite_dir,
     save,
-    validate_suite_dir,
 )
 
 
@@ -29,30 +28,6 @@ REQUIRED_COLUMNS = {
     "relearn_savings",
     "relearn_reached_criterion",
 }
-
-
-def pareto_mask(
-    frame: pd.DataFrame,
-    *,
-    maximize: list[str],
-    minimize: list[str],
-) -> np.ndarray:
-    if frame.empty:
-        return np.zeros(0, dtype=bool)
-    objective_columns = []
-    for column in maximize:
-        objective_columns.append(frame[column].to_numpy(dtype=float))
-    for column in minimize:
-        objective_columns.append(-frame[column].to_numpy(dtype=float))
-    objectives = np.column_stack(objective_columns)
-    keep = np.ones(len(frame), dtype=bool)
-    for index, row in enumerate(objectives):
-        if not keep[index]:
-            continue
-        dominates = np.all(objectives >= row, axis=1) & np.any(objectives > row, axis=1)
-        if np.any(dominates):
-            keep[index] = False
-    return keep
 
 
 def place_legend(ax: plt.Axes) -> None:

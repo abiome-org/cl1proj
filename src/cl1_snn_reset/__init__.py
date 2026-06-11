@@ -5,8 +5,9 @@ Import this package for culture simulation, train-reset-relearn trials, protocol
 generation, metrics, and batch sweeps. Runnable study scripts live under
 ``experiments/`` and must not modify ``src/``.
 """
-from .analysis import pareto_front, rank_protocols
+from .analysis import pareto_front, pareto_mask, rank_protocols
 from .config import CultureConfig, ExperimentConfig, TaskConfig, load_experiment_config
+from .reporting import energy_cost_uC, load_suite, suite_neuron_count, validate_suite_dir
 from .electrodes import ChannelActivity, ElectrodeArray, StimEvent
 from .artifacts import TrialArtifacts
 from .experiment import (
@@ -87,6 +88,7 @@ __all__ = [
     "compute_trial_metrics",
     "conditioned_electrode_association",
     "delayed_conditioned_response",
+    "energy_cost_uC",
     "evaluate_evoked_task",
     "evaluate_probe",
     "evaluate_regime",
@@ -95,7 +97,9 @@ __all__ = [
     "evoked_channel_response",
     "generate_colored_events",
     "load_experiment_config",
+    "load_suite",
     "pareto_front",
+    "pareto_mask",
     "pattern_discrimination",
     "protocol_events",
     "rank_protocols",
@@ -108,6 +112,7 @@ __all__ = [
     "run_training_trial",
     "savings_score",
     "stim_event_ms",
+    "suite_neuron_count",
     "summarize_regime_grid",
     "summarize_sweep",
     "temporal_order_discrimination",
@@ -115,5 +120,6 @@ __all__ = [
     "trace_probe_auc",
     "train_to_criterion",
     "train_regime",
+    "validate_suite_dir",
     "weight_erasure_score",
 ]
