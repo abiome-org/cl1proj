@@ -27,7 +27,8 @@
 - **`experiments/`** holds runnable studies. Each subdirectory has a single `README.md` (scripts + results layout). Do not edit `src/` when adding or running experiments.
 - **Imports:** experiments use `import cl1_snn_reset` / `cl1_clsdk_bridge` public APIs (`__init__` exports and documented subpackages such as `cl1_snn_reset.inverse_control`). Do not import private `_` symbols or reach into internal modules when a public export exists.
 - **`experiments/regression1/`** — `smoke.py`, `benchmark.py`, `learned_inverse_reset.py`, inverse-reset YAML configs; outputs under `experiments/regression1/results/`; suitable for quick checks and controllability regressions.
-- **`experiments/snn_reset/`** — modular SNN reset grid regime: `run_grid.py` launches one script per task (`task_evoked_channel_response.py`, `task_conditioned_electrode_association.py`, `task_delayed_conditioned_response.py`, `task_pattern_discrimination.py`, `task_temporal_order_discrimination.py`); outputs under `experiments/snn_reset/results/`.
+- **`experiments/snn_reset/`** — modular SNN reset grid regime: task definitions live in one `tasks.py` (`TASK_BUILDERS` registry; run one with `tasks.py --task <name>`), and `run_grid.py` runs the suite in-process via `common.run_task_grid`; outputs under `experiments/snn_reset/results/`.
+- **Figures:** one script per figure under a per-experiment `figures/` directory — never a monolithic `figures.py`. Each figure script imports shared support (palette, style, suite IO, loaders, plot helpers) from a `figlib`-style module rather than re-implementing it.
 - **`tests/`** — fast pytest for library and bridge; may use internal modules for white-box tests.
 
 ## Library API (cl1_snn_reset)

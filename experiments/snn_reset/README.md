@@ -13,7 +13,7 @@ aggregated into `all_task_summary.csv`.
 | `run_grid.py` | Suite runner: picks tasks, gives each its own output dir, aggregates summaries |
 | `common.py` | Shared CLI args, resume logic, and `run_task_grid` (one task's protocol × seed grid) |
 | `figlib.py` | Shared figure support: palette, style, suite IO, loaders, summaries, plot helpers |
-| `figures.py` | Paper-figure generator for a completed suite |
+| `figures/` | One script per paper figure (see AGENTS.md); each imports `figlib` |
 | `relearning_analysis.py` | Pareto analysis for forgetting versus relearning savings |
 
 The five tasks (`evoked_channel_response`, `conditioned_electrode_association`,
