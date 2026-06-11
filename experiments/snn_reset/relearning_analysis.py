@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -10,7 +9,16 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from figures import PALETTE, TASK_LABELS, apply_style, latest_suite_dir, save, validate_suite_dir
+from figlib import (
+    PALETTE,
+    TASK_LABELS,
+    apply_style,
+    default_output_dir,
+    energy_cost_uC,
+    latest_suite_dir,
+    save,
+    validate_suite_dir,
+)
 
 
 REQUIRED_COLUMNS = {
@@ -21,11 +29,6 @@ REQUIRED_COLUMNS = {
     "relearn_savings",
     "relearn_reached_criterion",
 }
-
-
-def default_output_dir(suite_dir: Path) -> Path:
-    stamp = datetime.now().strftime("%Y%m%d")
-    return Path.home() / "Desktop" / f"cl1_snn_reset_relearning_{suite_dir.name}_{stamp}"
 
 
 def pareto_mask(
@@ -78,16 +81,9 @@ def load_relearning_raw(suite_dir: Path) -> pd.DataFrame:
     raw = pd.concat(frames, ignore_index=True).copy()
     if "forgetting_score" not in raw.columns:
         raw["forgetting_score"] = raw["no_reset_score"] - raw["reset_score"]
-    energy_cost_uC = (
-        raw["current_uA"].abs()
-        * raw["pulse_width_us"].astype(float)
-        * 1e-6
-        * raw["total_pulses"].astype(float)
-        * 2.0
-    )
     return raw.assign(
         task_label=raw["task_name"].map(TASK_LABELS).fillna(raw["task_name"]),
-        energy_cost_uC=energy_cost_uC,
+        energy_cost_uC=energy_cost_uC(raw),
         residual_performance=raw["reset_score"],
         score_drop=raw["forgetting_score"] > 0.0,
         criterion_forget=(raw["no_reset_score"] >= raw["criterion_score"]) & (raw["reset_score"] < raw["criterion_score"]),
@@ -379,7 +375,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     suite_dir = args.suite_dir or latest_suite_dir()
-    out_dir = args.out or default_output_dir(suite_dir)
+    out_dir = args.out or default_output_dir(suite_dir, "relearning")
     out_dir.mkdir(parents=True, exist_ok=True)
     apply_style()
     raw = load_relearning_raw(suite_dir)
