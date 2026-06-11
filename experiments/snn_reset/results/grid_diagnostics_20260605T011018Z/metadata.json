@@ -1,0 +1,88 @@
+{
+  "comparison_summary": {
+    "baseline": {
+      "comparison_rows": 9,
+      "max_abs_branch_weight_diff": 0.0,
+      "max_abs_post_weight_delta": 0.0,
+      "max_abs_spike_delta": 0.0,
+      "rows": 18
+    },
+    "consolidation_delay": {
+      "comparison_rows": 27,
+      "max_abs_branch_weight_diff": 0.0,
+      "max_abs_post_weight_delta": 0.0,
+      "max_abs_spike_delta": 0.0,
+      "rows": 54
+    },
+    "homeostasis_sweep": {
+      "comparison_rows": 36,
+      "max_abs_branch_weight_diff": 0.0,
+      "max_abs_post_weight_delta": 0.0,
+      "max_abs_spike_delta": 0.0,
+      "rows": 72
+    },
+    "stronger_protocols": {
+      "comparison_rows": 18,
+      "max_abs_branch_weight_diff": 278.14623184383373,
+      "max_abs_post_weight_delta": 300.8993873622367,
+      "max_abs_spike_delta": 968110.0,
+      "rows": 36
+    },
+    "training_depth": {
+      "comparison_rows": 9,
+      "max_abs_branch_weight_diff": 0.0,
+      "max_abs_post_weight_delta": 0.0,
+      "max_abs_spike_delta": 0.0,
+      "rows": 18
+    }
+  },
+  "criterion_response_probability": 0.875,
+  "elapsed_s": 1083.9098885830026,
+  "finished_at_utc": "2026-06-05T01:28:22.682472+00:00",
+  "grid_dir": "/Users/j8ck/Documents/cl1proj/experiments/snn_reset/results/full_grid_10k_calibrated_20260602T042050Z",
+  "max_trials": 120,
+  "neurons": 10000,
+  "orthogonality": {
+    "max": 0.999993928638756,
+    "mean": 0.9999661911742446,
+    "median": 0.9999836529884484,
+    "min": 0.9999012892645086,
+    "near_zero_fraction_abs_lt_0_1": 0.0,
+    "protocols": 540,
+    "q05": 0.9999012892645086,
+    "q95": 0.999993928638756,
+    "rows": 1620,
+    "seeds": 3,
+    "std": 3.34294677718881e-05
+  },
+  "outputs": [
+    "all_paired_comparisons.csv",
+    "baseline_branches.csv",
+    "baseline_comparison.csv",
+    "baseline_summary.csv",
+    "consolidation_delay_branches.csv",
+    "consolidation_delay_comparison.csv",
+    "consolidation_delay_summary.csv",
+    "homeostasis_sweep_branches.csv",
+    "homeostasis_sweep_comparison.csv",
+    "homeostasis_sweep_summary.csv",
+    "metadata.json",
+    "orthogonality_by_duration_seed.csv",
+    "orthogonality_distribution.png",
+    "orthogonality_summary.csv",
+    "paired_comparison_deltas.png",
+    "stronger_protocols_branches.csv",
+    "stronger_protocols_comparison.csv",
+    "stronger_protocols_summary.csv",
+    "training_depth_branches.csv",
+    "training_depth_comparison.csv",
+    "training_depth_summary.csv"
+  ],
+  "run_id": "grid_diagnostics_20260605T011018Z",
+  "seeds": [
+    1,
+    3,
+    4
+  ],
+  "started_at_utc": "2026-06-05T01:10:18.765298+00:00"
+}

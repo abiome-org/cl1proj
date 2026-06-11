@@ -1,0 +1,7 @@
+probe,condition,protocol_id,replicates,duration_s,current_uA,schedule,weight_erasure_delta,post_behavior_delta,post_delta_norm_delta,post_minus_trained_norm_delta,residual_trace_correlation_delta,reset_window_neuron_spikes_delta,post_readout_neuron_spikes_delta,trained_delta_norm
+stronger_protocols,expanded_protocol_family,chirp_10s_10uA,3,10.0,10.0,chirp,6.382117057376537,0.0,-267.09513298542294,-228.99132245275652,-0.604927738242005,702622.3333333334,14.333333333333334,58.415272902742494
+stronger_protocols,expanded_protocol_family,gated_burst_10s_10uA,3,10.0,10.0,gated_burst,6.211741422229783,0.0,-275.3565174389492,-262.1972211875159,-0.23990063327054775,253144.33333333334,0.0,58.415272902742494
+stronger_protocols,expanded_protocol_family,gated_burst_30s_10uA,3,30.0,10.0,gated_burst,4.685967369879418,0.0,-220.9426454651876,-204.61800252765894,-0.22182803665017548,827873.6666666666,0.0,58.415272902742494
+stronger_protocols,expanded_protocol_family,static_3s_10uA,3,3.0,10.0,static,0.00030473179651805776,0.0,-0.023279017631172867,-0.023212383476002667,-1.6484478737588404e-06,23.0,0.0,58.415272902742494
+stronger_protocols,expanded_protocol_family,static_3s_20uA_threshold_probe,3,3.0,20.0,static,0.4636493999431568,0.0,-23.326224338369496,-13.031594157466591,-0.177019240912354,173972.0,0.0,58.415272902742494
+stronger_protocols,expanded_protocol_family,static_3s_5uA,3,3.0,5.0,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,58.415272902742494

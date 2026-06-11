@@ -1,0 +1,13 @@
+probe,condition,protocol_id,replicates,duration_s,current_uA,schedule,weight_erasure_delta,post_behavior_delta,post_delta_norm_delta,post_minus_trained_norm_delta,residual_trace_correlation_delta,reset_window_neuron_spikes_delta,post_readout_neuron_spikes_delta,trained_delta_norm
+homeostasis_sweep,default_homeostasis,high_burden_3s,3,3.0,2.6,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,58.415272902742494
+homeostasis_sweep,default_homeostasis,low_burden_0.75s,3,0.75,0.8,epoch_pause,0.0,0.0,0.0,0.0,0.0,0.0,0.0,58.415272902742494
+homeostasis_sweep,default_homeostasis,mid_burden_1.5s,3,1.5,0.8,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,58.415272902742494
+homeostasis_sweep,homeostasis_off,high_burden_3s,3,3.0,2.6,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2973265179425341
+homeostasis_sweep,homeostasis_off,low_burden_0.75s,3,0.75,0.8,epoch_pause,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2973265179425341
+homeostasis_sweep,homeostasis_off,mid_burden_1.5s,3,1.5,0.8,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2973265179425341
+homeostasis_sweep,low_homeostasis_rate,high_burden_3s,3,3.0,2.6,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.684064304169263
+homeostasis_sweep,low_homeostasis_rate,low_burden_0.75s,3,0.75,0.8,epoch_pause,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.684064304169263
+homeostasis_sweep,low_homeostasis_rate,mid_burden_1.5s,3,1.5,0.8,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,12.684064304169263
+homeostasis_sweep,slow_homeostasis_interval,high_burden_3s,3,3.0,2.6,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.0547532714838184
+homeostasis_sweep,slow_homeostasis_interval,low_burden_0.75s,3,0.75,0.8,epoch_pause,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.0547532714838184
+homeostasis_sweep,slow_homeostasis_interval,mid_burden_1.5s,3,1.5,0.8,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2.0547532714838184

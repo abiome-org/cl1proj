@@ -1,0 +1,10 @@
+probe,condition,protocol_id,replicates,duration_s,current_uA,schedule,weight_erasure_delta,post_behavior_delta,post_delta_norm_delta,post_minus_trained_norm_delta,residual_trace_correlation_delta,reset_window_neuron_spikes_delta,post_readout_neuron_spikes_delta,trained_delta_norm
+consolidation_delay,rest_10s,high_burden_3s,3,3.0,2.6,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,399.4594718906376
+consolidation_delay,rest_10s,low_burden_0.75s,3,0.75,0.8,epoch_pause,0.0,0.0,0.0,0.0,0.0,0.0,0.0,399.4594718906376
+consolidation_delay,rest_10s,mid_burden_1.5s,3,1.5,0.8,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,399.4594718906376
+consolidation_delay,rest_1s,high_burden_3s,3,3.0,2.6,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,83.663668070822
+consolidation_delay,rest_1s,low_burden_0.75s,3,0.75,0.8,epoch_pause,0.0,0.0,0.0,0.0,0.0,0.0,0.0,83.663668070822
+consolidation_delay,rest_1s,mid_burden_1.5s,3,1.5,0.8,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,83.663668070822
+consolidation_delay,rest_30s,high_burden_3s,3,3.0,2.6,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,503.07839688929835
+consolidation_delay,rest_30s,low_burden_0.75s,3,0.75,0.8,epoch_pause,0.0,0.0,0.0,0.0,0.0,0.0,0.0,503.07839688929835
+consolidation_delay,rest_30s,mid_burden_1.5s,3,1.5,0.8,static,0.0,0.0,0.0,0.0,0.0,0.0,0.0,503.07839688929835
