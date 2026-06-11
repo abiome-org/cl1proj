@@ -131,10 +131,12 @@ Regression benchmark (timing / short sweep):
 .venv-uv/bin/python experiments/regression1/benchmark.py
 ```
 
-Calibrated full 10k-neuron protocol grid:
+Calibrated full 10k-neuron protocol grid (validated learned tasks):
 
 ```bash
-.venv-uv/bin/python experiments/snn_reset/full_grid_search.py
+.venv-uv/bin/python experiments/snn_reset/run_grid.py \
+  --tasks conditioned_electrode_association pattern_discrimination \
+  --neurons 10000 --seeds 1 3 4
 ```
 
 Library and bridge tests:

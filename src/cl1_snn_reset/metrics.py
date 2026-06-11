@@ -1,3 +1,4 @@
+"""Trial-outcome and network-health metrics (weight/path erasure, relearning savings, criticality, health, residual trace correlation) used to score reset protocols."""
 from __future__ import annotations
 
 from dataclasses import dataclass

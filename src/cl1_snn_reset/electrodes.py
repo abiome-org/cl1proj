@@ -1,3 +1,4 @@
+"""MEA interface: channel-to-neuron spatial mapping, stimulation pulse kernels, and channel-level activity readout."""
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -1,3 +1,4 @@
+"""Spiking culture simulator: an LIF/STDP recurrent E/I network with slow homeostasis, electrode I/O, and weight/activity snapshots (NumPy core, optional Brian2 backend)."""
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -1,3 +1,4 @@
+"""Protocol screening: multi-objective Pareto front, weighted ranking, and screening plots."""
 from __future__ import annotations
 
 import numpy as np

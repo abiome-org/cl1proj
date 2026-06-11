@@ -1,3 +1,4 @@
+"""Trial orchestration: build a naive culture, train it, apply one reset protocol, and capture the train/reset/relearn phase snapshots and artifacts."""
 from __future__ import annotations
 
 from dataclasses import dataclass

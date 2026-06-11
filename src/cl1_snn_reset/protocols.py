@@ -1,3 +1,4 @@
+"""Reset-protocol representation and its compilation into channel-level pulse events across the schedule, spatial-pattern, and temporal-color actuator axes."""
 from __future__ import annotations
 
 from dataclasses import dataclass

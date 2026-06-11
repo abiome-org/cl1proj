@@ -1,3 +1,4 @@
+"""Parallel protocol-sweep execution and per-protocol summary aggregation."""
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed

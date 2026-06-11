@@ -1,3 +1,4 @@
+"""Colored-noise generation and spatial channel-sampling strategies for reset stimulation."""
 from __future__ import annotations
 
 import numpy as np

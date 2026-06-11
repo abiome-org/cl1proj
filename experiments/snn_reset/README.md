@@ -1,23 +1,42 @@
 # SNN reset grid search
 
-Each task is a separate script; `run_grid.py` calls those
-task scripts and collects summaries under one result folder.
-
-The runner trains each task/seed once, lets the trained state settle, and then
-clones that same state across the protocol grid.
+`run_grid.py` runs the task suite in-process: for each task it trains every
+task/seed once, lets the trained state settle, then clones that same state across
+the protocol grid. Per-task results land in one subfolder each and are
+aggregated into `all_task_summary.csv`.
 
 ## Scripts
 
-| Script | Task |
+| Script | Role |
 |--------|------|
-| `task_evoked_channel_response.py` | Direct evoked channel response |
-| `task_conditioned_electrode_association.py` | A to B conditioned association |
-| `task_delayed_conditioned_response.py` | Delayed conditioned response |
-| `task_pattern_discrimination.py` | Two-pattern target discrimination |
-| `task_temporal_order_discrimination.py` | Same electrodes, different temporal order |
-| `run_grid.py` | Central runner that launches the task scripts |
-| `figures.py` | Figure generator for completed modular grid outputs |
+| `tasks.py` | All task definitions in one place (`TASK_BUILDERS` registry); run one task with `tasks.py --task <name>` |
+| `run_grid.py` | Suite runner: picks tasks, gives each its own output dir, aggregates summaries |
+| `common.py` | Shared CLI args, resume logic, and `run_task_grid` (one task's protocol × seed grid) |
+| `figlib.py` | Shared figure support: palette, style, suite IO, loaders, summaries, plot helpers |
+| `figures.py` | Paper-figure generator for a completed suite |
 | `relearning_analysis.py` | Pareto analysis for forgetting versus relearning savings |
+
+The five tasks (`evoked_channel_response`, `conditioned_electrode_association`,
+`delayed_conditioned_response`, `pattern_discrimination`,
+`temporal_order_discrimination`) live as builder functions in `tasks.py`. Their
+task-identity choices (criterion, training length, channel wiring) are the
+experiment's decisions; the mechanism they configure lives in `cl1_snn_reset`.
+
+## Reading the results
+
+`all_task_summary.csv` has one row per protocol × task (averaged over seeds).
+Key columns:
+
+| Column | Meaning |
+|--------|---------|
+| `baseline_score`, `trained_score` | Task score before / after training (learning check: 0 → 1 for a real learned task) |
+| `naive_weight_control_score` | Score after overwriting trained weights with naive weights — the privileged positive control; ~0 confirms the readout is weight-sensitive |
+| `reset_score`, `no_reset_score` | Post-protocol score for the reset branch vs the matched plasticity-on rest branch |
+| `reset_minus_no_reset_score` | Apparent behavioral reset; ≤ 0 means the protocol did not lower the score below drift |
+| `weight_erasure_reset` | 1 − ‖W_reset − W_naive‖ / ‖W_trained − W_naive‖; >0 moves weights toward naive, <0 moves them away |
+| `erasure_projection_reset_vs_no_reset` | Fraction of the reset displacement aligned with the training axis |
+| `relearn_savings` | 1 − relearn_trials / initial_trials; >0 means relearning was faster (trace persisted), ≤ 0 is genuine functional reset |
+| `reset_window_neuron_spikes_delta` | Extra neuron spikes the protocol evokes vs the rest branch (acute perturbation, not erasure) |
 
 ## Validated Grid
 

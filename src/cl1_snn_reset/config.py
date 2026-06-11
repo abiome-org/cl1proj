@@ -1,3 +1,4 @@
+"""Frozen configuration dataclasses (culture, task, experiment, sweep) and the YAML experiment-config loader."""
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, fields, is_dataclass

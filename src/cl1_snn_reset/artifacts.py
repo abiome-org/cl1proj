@@ -1,3 +1,4 @@
+"""TrialArtifacts: the intermediate weight/activity bundle handed from a trial to metric computation."""
 from __future__ import annotations
 
 from dataclasses import dataclass

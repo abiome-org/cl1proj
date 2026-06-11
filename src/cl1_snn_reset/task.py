@@ -1,3 +1,4 @@
+"""Electrode-to-electrode conditioned-response task: paired training to criterion plus input-vs-sham evaluation of the learned response."""
 from __future__ import annotations
 
 import copy
