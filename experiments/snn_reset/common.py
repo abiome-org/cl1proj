@@ -10,7 +10,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_compl
 from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 
@@ -271,17 +271,15 @@ def write_outputs(output_dir: Path, rows: list[dict[str, Any]]) -> pd.DataFrame:
     return summary
 
 
-def run_task_cli(
+def run_task_grid(
+    args: argparse.Namespace,
+    regime: TaskRegime,
     *,
-    description: str,
-    build_regime: Callable[[argparse.Namespace], TaskRegime],
-) -> None:
-    parser = task_parser(description)
-    args = parser.parse_args()
-    regime = build_regime(args)
+    output_dir: Path,
+    run_id: str,
+) -> dict[str, Any]:
+    """Run one task's protocol x seed grid into ``output_dir`` and return its metadata."""
     protocols = protocols_from_args(args)
-    run_id = args.run_id or datetime.now(timezone.utc).strftime(f"{regime.name}_%Y%m%dT%H%M%SZ")
-    output_dir = args.output_dir or RESULTS_DIR / run_id
     output_dir.mkdir(parents=True, exist_ok=True)
     raw_path = output_dir / "raw_trials.csv"
     started = perf_counter()
@@ -383,6 +381,7 @@ def run_task_cli(
         ),
         flush=True,
     )
+    return metadata
 
 
 def collect_task_summaries(output_root: Path) -> pd.DataFrame:
