@@ -34,7 +34,7 @@ what a real experiment could actually see. `build_target_state` constructs the
 goal vector the optimizer aims for. `HybridStateProjector` is the default
 projector.
 
-### 2. Stimulation "language" — `blocks.py`, `stim_grammar.py`, `pulse_compiler.py`, `program_features.py`
+### 2. Stimulation "language" — `blocks.py`, `stim_sampling.py`, `pulse_compiler.py`, `program_features.py`
 
 A grammar of stimulation **blocks** — anti-STDP pairing, probe-triggered,
 coordinated reset, low-frequency depotentiation, colored-noise, actuator

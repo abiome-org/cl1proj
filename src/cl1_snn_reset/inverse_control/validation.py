@@ -21,7 +21,7 @@ from cl1_snn_reset.task import evaluate_task, train_to_criterion
 
 from .inverse_optimizer import CandidateProtocol
 from .pulse_compiler import compile_program_to_stim_events, estimate_energy_cost
-from .state_projectors import StateProjector, StateVectorSpec, build_target_state
+from .state_projectors import StateProjector, StateVectorSpec, build_target_state, masked_norm
 from .training_rollout import train_baseline_and_task_states
 
 
@@ -66,8 +66,8 @@ def validate_candidate_against_no_reset(
     )
     task_mask = state_spec.group_mask(("task_path", "readout"))
     off_task_mask = ~task_mask
-    task_no = _masked_norm(no_reset_state - target, task_mask)
-    task_stim = _masked_norm(stimmed_state - target, task_mask)
+    task_no = masked_norm(no_reset_state - target, task_mask)
+    task_stim = masked_norm(stimmed_state - target, task_mask)
     stimulus_effect = stimmed_state - no_reset_state
     post_behavior = evaluate_task(copy.deepcopy(stim_net), cfg.task, trials=cfg.task.eval_trials)
     if relearn:
@@ -103,7 +103,7 @@ def validate_candidate_against_no_reset(
         "validated_trace_auc_proxy": _trace_feature(state_spec, stimmed_state),
         "validated_health": health.score,
         "validated_criticality_distance": crit.distance_from_naive,
-        "validated_orthogonal_damage": _masked_norm(stimmed_state - target, off_task_mask),
+        "validated_orthogonal_damage": masked_norm(stimmed_state - target, off_task_mask),
         "stimulus_effect_norm": float(np.linalg.norm(stimulus_effect)),
         "post_reset_firing_rate_hz": health.firing_rate_hz,
         "silent_fraction": _silent_fraction(stim_activity),
@@ -192,12 +192,6 @@ def _path(cfg: ExperimentConfig, net) -> float:
     if cfg.warmup_s > 0:
         net.advance(cfg.warmup_s * 1000.0, [], plasticity=False, record=False)
     return net.path_strength(cfg.task.input_channels, cfg.task.target_channels)
-
-
-def _masked_norm(values: np.ndarray, mask: np.ndarray) -> float:
-    if not np.any(mask):
-        return 0.0
-    return float(np.linalg.norm(values[mask]))
 
 
 def _trace_feature(spec: StateVectorSpec, state: np.ndarray) -> float:

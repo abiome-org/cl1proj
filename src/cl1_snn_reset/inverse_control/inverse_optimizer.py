@@ -8,7 +8,7 @@ import numpy as np
 
 from .pulse_compiler import InvalidStimProgramError, compile_program_to_stim_events, estimate_energy_cost
 from .program_features import stim_program_features
-from .state_projectors import StateVectorSpec
+from .state_projectors import StateVectorSpec, masked_norm
 from .stim_sampling import StimSamplingConfig, mutate_stim_program, sample_stim_programs
 from .blocks import StimConstraints, StimProgram
 
@@ -81,10 +81,10 @@ class InverseResetObjective:
         pred = np.asarray(predicted_post_state, dtype=np.float64)
         no_reset = np.asarray(no_reset_state, dtype=np.float64)
         target = np.asarray(target_state, dtype=np.float64)
-        task_remaining_no = _masked_norm(no_reset - target, self.task_mask)
-        task_remaining_pred = _masked_norm(pred - target, self.task_mask)
+        task_remaining_no = masked_norm(no_reset - target, self.task_mask)
+        task_remaining_pred = masked_norm(pred - target, self.task_mask)
         task_erasure = task_remaining_no - task_remaining_pred
-        health_penalty = _masked_norm(pred - target, self.health_mask)
+        health_penalty = masked_norm(pred - target, self.health_mask)
         losses = {
             "task_trace": _masked_mse(pred - target, self.task_mask),
             "input_target_path": _masked_mse(pred - target, self.path_mask),
@@ -290,12 +290,6 @@ def _unique_candidates(candidates: list[CandidateProtocol]) -> list[CandidatePro
         seen.add(key)
         result.append(candidate)
     return result
-
-
-def _masked_norm(values: np.ndarray, mask: np.ndarray) -> float:
-    if not np.any(mask):
-        return 0.0
-    return float(np.linalg.norm(values[mask]))
 
 
 def _masked_mse(values: np.ndarray, mask: np.ndarray) -> float:

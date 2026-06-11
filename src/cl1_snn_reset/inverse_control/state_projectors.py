@@ -13,6 +13,13 @@ from cl1_snn_reset.metrics import activity_features, criticality, health_metrics
 from cl1_snn_reset.trace_probe import trace_auc_proxy
 
 
+def masked_norm(values: np.ndarray, mask: np.ndarray) -> float:
+    """L2 norm of ``values`` restricted to ``mask`` (0.0 when the mask is empty)."""
+    if not np.any(mask):
+        return 0.0
+    return float(np.linalg.norm(values[mask]))
+
+
 @dataclass(frozen=True)
 class StateVectorSpec:
     feature_names: tuple[str, ...]
