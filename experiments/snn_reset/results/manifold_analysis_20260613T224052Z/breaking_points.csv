@@ -1,0 +1,7 @@
+task,seed,alpha_star_axis,random_ever_breaks
+conditioned_electrode_association,1,0.0667,False
+conditioned_electrode_association,3,0.0667,False
+conditioned_electrode_association,4,0.0667,False
+pattern_discrimination,1,0.1333,False
+pattern_discrimination,3,0.0667,True
+pattern_discrimination,4,0.1333,False
