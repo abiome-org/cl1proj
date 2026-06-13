@@ -53,7 +53,7 @@ class CorticalCultureNetwork:
         self.baseline_weights = self.weights.copy()
         self.signs = np.sign(self.baseline_weights)
         self._out_start = self._csr_start(self.sources, self.n_neurons)
-        self._incoming_sources, self._incoming_edges = self._incoming_index()
+        self._incoming_edges = self._incoming_index()
         self._channel_matrix_cache: np.ndarray | None = None
         self._channel_matrix_weights_id: int | None = None
 
@@ -237,16 +237,11 @@ class CorticalCultureNetwork:
         start[1:] = np.cumsum(counts)
         return start
 
-    def _incoming_index(self) -> tuple[list[np.ndarray], list[np.ndarray]]:
-        incoming_sources: list[list[int]] = [[] for _ in range(self.n_neurons)]
+    def _incoming_index(self) -> list[np.ndarray]:
         incoming_edges: list[list[int]] = [[] for _ in range(self.n_neurons)]
-        for edge, (source, target) in enumerate(zip(self.sources.tolist(), self.targets.tolist())):
-            incoming_sources[target].append(source)
+        for edge, target in enumerate(self.targets.tolist()):
             incoming_edges[target].append(edge)
-        return (
-            [np.asarray(values, dtype=np.int64) for values in incoming_sources],
-            [np.asarray(values, dtype=np.int64) for values in incoming_edges],
-        )
+        return [np.asarray(values, dtype=np.int64) for values in incoming_edges]
 
     def _events_by_step(
         self,

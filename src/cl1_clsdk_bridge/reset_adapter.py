@@ -54,10 +54,6 @@ class ResetSNNAdapter:
         current = float(np.clip(np.max(np.abs(drive)), 0.05, 8.0))
         self._pending_stims.append((int(timestamp), int(channel), current))
 
-    def apply_stim(self, channel: int, drive: np.ndarray) -> None:
-        """Compatibility method for older producer code paths."""
-        self.apply_timed_stim(0, channel, drive)
-
     def render(
         self,
         from_timestamp: int,

@@ -212,9 +212,6 @@ class EliteMutationStimOptimizer(RandomSearchOptimizer):
         return sorted(unique, key=lambda candidate: candidate.predicted_loss)[: kwargs["candidate_count"]]
 
 
-CMAESStimOptimizer = EliteMutationStimOptimizer
-
-
 def _resolve_sampling(stim_sampling: StimSamplingConfig | dict[str, Any]) -> StimSamplingConfig:
     if isinstance(stim_sampling, StimSamplingConfig):
         return stim_sampling

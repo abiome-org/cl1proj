@@ -4,7 +4,6 @@ import argparse
 import json
 import os
 import platform
-import sys
 from pathlib import Path
 from time import perf_counter
 
@@ -151,4 +150,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-    sys.exit(0)

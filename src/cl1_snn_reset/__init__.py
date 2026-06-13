@@ -54,7 +54,7 @@ from .task import (
     evaluate_task_branch,
     train_to_criterion,
 )
-from .trace_probe import trace_probe_auc, trace_auc_proxy
+from .trace_probe import trace_auc_proxy
 
 __all__ = [
     "Brian2CultureNetwork",
@@ -117,7 +117,6 @@ __all__ = [
     "summarize_sweep",
     "temporal_order_discrimination",
     "trace_auc_proxy",
-    "trace_probe_auc",
     "train_to_criterion",
     "train_regime",
     "validate_suite_dir",

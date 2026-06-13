@@ -367,26 +367,6 @@ class HybridStateProjector(StateProjector):
         )
 
 
-class ObservableStateProjector(HybridStateProjector):
-    def __init__(self, task: TaskConfig, **kwargs: Any):
-        super().__init__(
-            task,
-            include_observable=True,
-            include_privileged=False,
-            **kwargs,
-        )
-
-
-class PrivilegedStateProjector(HybridStateProjector):
-    def __init__(self, task: TaskConfig, **kwargs: Any):
-        super().__init__(
-            task,
-            include_observable=False,
-            include_privileged=True,
-            **kwargs,
-        )
-
-
 def build_target_state(
     spec: StateVectorSpec,
     baseline_state: np.ndarray,
@@ -396,10 +376,6 @@ def build_target_state(
     mode: str = "trace_removed",
 ) -> np.ndarray:
     mode = mode.lower()
-    if mode == "historical_baseline":
-        return np.asarray(baseline_state, dtype=np.float64).copy()
-    if mode == "age_matched_baseline":
-        return np.asarray(baseline_state, dtype=np.float64).copy()
     if mode not in {"trace_removed", "hybrid"}:
         raise ValueError(f"Unknown target mode: {mode}")
 

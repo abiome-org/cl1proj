@@ -5,7 +5,6 @@ Learned inverse reset control for the CL1-style SNN reset simulator.
 from .controllability import ControllabilityReport, analyze_controllability
 from .forward_models import MeanZeroDeltaModel, RidgeDeltaModel, evaluate_forward_model
 from .inverse_optimizer import (
-    CMAESStimOptimizer,
     CandidateProtocol,
     EliteMutationStimOptimizer,
     InverseResetObjective,
@@ -39,7 +38,6 @@ __all__ = [
     "CausalDeltaDatasetBuilder",
     "ControllabilityReport",
     "EliteMutationStimOptimizer",
-    "CMAESStimOptimizer",
     "HybridStateProjector",
     "InvalidStimProgramError",
     "InverseResetObjective",
