@@ -13,6 +13,9 @@ from cl1_snn_reset import (
     evaluate_regime,
     evaluate_task_branch,
     evoked_channel_response,
+    multi_association_mapping,
+    overlapping_shared_input_association,
+    overlapping_shared_target_association,
     pattern_discrimination,
     protocol_events,
     run_regime_reset_trial,
@@ -21,6 +24,7 @@ from cl1_snn_reset import (
     summarize_sweep,
     temporal_order_discrimination,
     weight_erasure_score,
+    xor_electrode_classification,
 )
 from cl1_snn_reset.task_regimes.benchmark import forgetting_flags
 
@@ -195,8 +199,12 @@ def test_task_regime_presets_validate():
         evoked_channel_response(),
         conditioned_electrode_association(),
         delayed_conditioned_response(),
+        multi_association_mapping(),
+        overlapping_shared_input_association(),
+        overlapping_shared_target_association(),
         pattern_discrimination(),
         temporal_order_discrimination(),
+        xor_electrode_classification(),
     ]
 
     for regime in regimes:
@@ -204,6 +212,30 @@ def test_task_regime_presets_validate():
         assert regime.name
         assert any(probe.is_positive for probe in regime.probes)
         assert any(probe.is_negative for probe in regime.probes)
+
+
+def test_new_task_regime_families_have_expected_probe_structure():
+    shared_target = overlapping_shared_target_association()
+    shared_input = overlapping_shared_input_association()
+    multi = multi_association_mapping()
+    xor = xor_electrode_classification()
+
+    assert len(shared_target.training_trials) == 2
+    assert {probe.name for probe in shared_target.probes if probe.is_positive} == {
+        "a_shared_correct",
+        "b_shared_correct",
+    }
+    assert len(shared_input.training_trials) == 2
+    assert "input_context_correct" in {probe.name for probe in shared_input.probes if probe.is_positive}
+    assert len(multi.training_trials) == 4
+    assert sum(probe.is_positive for probe in multi.probes) == 4
+    assert sum(probe.is_negative for probe in multi.probes) == 12
+    assert len(xor.training_trials) == 3
+    assert {probe.name for probe in xor.probes if probe.is_positive} == {
+        "a_xor_correct",
+        "b_xor_correct",
+        "a_b_conjunction_correct",
+    }
 
 
 def test_evoked_channel_regime_scores_input_against_sham():

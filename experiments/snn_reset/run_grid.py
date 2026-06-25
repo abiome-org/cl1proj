@@ -21,6 +21,10 @@ DEFAULT_TASKS = [
     "evoked_channel_response",
     "conditioned_electrode_association",
     "pattern_discrimination",
+    "overlapping_shared_target_association",
+    "overlapping_shared_input_association",
+    "multi_association_mapping",
+    "xor_electrode_classification",
 ]
 
 

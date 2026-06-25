@@ -21,10 +21,14 @@ TASK_LABELS = {
     "evoked_channel_response": "Evoked",
     "conditioned_electrode_association": "Association",
     "delayed_conditioned_response": "Delayed",
+    "multi_association_mapping": "Multi-map",
+    "overlapping_shared_input_association": "Shared input",
+    "overlapping_shared_target_association": "Shared target",
     "pattern_discrimination": "Pattern",
     "temporal_order_discrimination": "Order",
+    "xor_electrode_classification": "XOR",
 }
-TASK_ORDER = ["Association", "Pattern"]
+TASK_ORDER = ["Association", "Pattern", "Shared target", "Shared input", "Multi-map", "XOR"]
 SCHEDULE_LABELS = {
     "static": "static",
     "alternating_blue_red": "blue-red",
@@ -46,7 +50,14 @@ PALETTE = {
     "light_gray": "#E5E7EB",
     "black": "#111827",
 }
-TASK_COLORS = {"Association": PALETTE["blue"], "Pattern": PALETTE["orange"]}
+TASK_COLORS = {
+    "Association": PALETTE["blue"],
+    "Pattern": PALETTE["orange"],
+    "Shared target": PALETTE["green"],
+    "Shared input": PALETTE["sky"],
+    "Multi-map": PALETTE["purple"],
+    "XOR": PALETTE["pink"],
+}
 BRANCH_COLORS = {"no reset": PALETTE["gray"], "reset": PALETTE["vermillion"]}
 SCHEDULE_COLORS = {
     "static": PALETTE["blue"],

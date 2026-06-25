@@ -9,8 +9,12 @@ from .presets import (
     conditioned_electrode_association,
     delayed_conditioned_response,
     evoked_channel_response,
+    multi_association_mapping,
+    overlapping_shared_input_association,
+    overlapping_shared_target_association,
     pattern_discrimination,
     temporal_order_discrimination,
+    xor_electrode_classification,
 )
 from .specs import (
     ProbeMetrics,
@@ -32,6 +36,9 @@ __all__ = [
     "evaluate_probe",
     "evaluate_regime",
     "evoked_channel_response",
+    "multi_association_mapping",
+    "overlapping_shared_input_association",
+    "overlapping_shared_target_association",
     "pattern_discrimination",
     "run_regime_grid",
     "run_regime_reset_trial",
@@ -41,4 +48,5 @@ __all__ = [
     "summarize_regime_grid",
     "temporal_order_discrimination",
     "train_regime",
+    "xor_electrode_classification",
 ]

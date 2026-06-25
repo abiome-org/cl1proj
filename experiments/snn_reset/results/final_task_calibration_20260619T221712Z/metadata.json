@@ -1,0 +1,83 @@
+{
+  "argv": [
+    "experiments/snn_reset/run_grid.py",
+    "--output-root",
+    "experiments/snn_reset/results/final_task_calibration_20260619T221712Z",
+    "--tasks",
+    "conditioned_electrode_association",
+    "pattern_discrimination",
+    "overlapping_shared_target_association",
+    "overlapping_shared_input_association",
+    "multi_association_mapping",
+    "xor_electrode_classification",
+    "--neurons",
+    "10000",
+    "--seeds",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "--limit-protocols",
+    "1",
+    "--workers",
+    "6",
+    "--executor",
+    "process",
+    "--training-repetitions",
+    "80",
+    "--eval-repetitions",
+    "8",
+    "--measure-relearning",
+    "--relearn-repetitions",
+    "80",
+    "--input-current-uA",
+    "120",
+    "--target-current-uA",
+    "120",
+    "--progress-interval",
+    "5"
+  ],
+  "elapsed_s": 504.18991329098935,
+  "git_commit": "22e96b54b816578ed35ad36e3dddf58056a1c11e",
+  "output_root": "experiments/snn_reset/results/final_task_calibration_20260619T221712Z",
+  "outputs": [
+    "metadata.json",
+    "all_task_summary.csv"
+  ],
+  "run_id": "snn_reset_grid_search_20260619T221734Z",
+  "started_at_utc": "2026-06-19T22:25:58.655041+00:00",
+  "status": "complete",
+  "tasks": [
+    {
+      "output_dir": "experiments/snn_reset/results/final_task_calibration_20260619T221712Z/conditioned_electrode_association",
+      "returncode": 0,
+      "task": "conditioned_electrode_association"
+    },
+    {
+      "output_dir": "experiments/snn_reset/results/final_task_calibration_20260619T221712Z/pattern_discrimination",
+      "returncode": 0,
+      "task": "pattern_discrimination"
+    },
+    {
+      "output_dir": "experiments/snn_reset/results/final_task_calibration_20260619T221712Z/overlapping_shared_target_association",
+      "returncode": 0,
+      "task": "overlapping_shared_target_association"
+    },
+    {
+      "output_dir": "experiments/snn_reset/results/final_task_calibration_20260619T221712Z/overlapping_shared_input_association",
+      "returncode": 0,
+      "task": "overlapping_shared_input_association"
+    },
+    {
+      "output_dir": "experiments/snn_reset/results/final_task_calibration_20260619T221712Z/multi_association_mapping",
+      "returncode": 0,
+      "task": "multi_association_mapping"
+    },
+    {
+      "output_dir": "experiments/snn_reset/results/final_task_calibration_20260619T221712Z/xor_electrode_classification",
+      "returncode": 0,
+      "task": "xor_electrode_classification"
+    }
+  ]
+}

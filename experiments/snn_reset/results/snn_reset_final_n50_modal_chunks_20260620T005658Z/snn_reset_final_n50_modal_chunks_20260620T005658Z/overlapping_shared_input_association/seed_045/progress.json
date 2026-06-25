@@ -1,0 +1,270 @@
+{
+  "argv": [
+    "/pkg/modal/_container_entrypoint.py"
+  ],
+  "completed_jobs": 60,
+  "config": {
+    "backend": "numpy",
+    "background_noise_mv": 1.0,
+    "build_workers": 1,
+    "consolidation_rest_s": 1.0,
+    "criterion_score": null,
+    "eval_repetitions": 8,
+    "executor": "thread",
+    "fourth_input_channel": 48,
+    "fourth_target_channel": 57,
+    "homeostasis_interval_ms": 100.0,
+    "homeostasis_rate": 0.0,
+    "input_channel": 8,
+    "input_current_uA": 120.0,
+    "limit_protocols": null,
+    "local_candidate_multiplier": 6,
+    "max_out_degree": 96,
+    "mean_out_degree": 64,
+    "measure_relearning": true,
+    "neurons": 10000,
+    "output_dir": null,
+    "output_root": "/results/snn_reset_final_n50_modal_chunks_20260620T005658Z",
+    "progress_interval": 60,
+    "relearn_only_if_forgot": false,
+    "relearn_repetitions": 80,
+    "resume": true,
+    "run_id": "overlapping_shared_input_association_seed045",
+    "second_input_channel": 24,
+    "second_target_channel": 33,
+    "seeds": [
+      45
+    ],
+    "spontaneous_rate_hz": 0.0,
+    "stop_at_criterion": false,
+    "target_channel": 17,
+    "target_current_uA": 120.0,
+    "tasks": [
+      "overlapping_shared_input_association"
+    ],
+    "third_input_channel": 40,
+    "third_target_channel": 49,
+    "training_repetitions": 80,
+    "warmup_s": 0.5,
+    "workers": 1
+  },
+  "elapsed_s": 990.151219333,
+  "eta_s": 0.0,
+  "finished_at_utc": "2026-06-20T01:14:05.239468+00:00",
+  "git_commit": "unknown",
+  "job_count": 60,
+  "jobs_per_s": 0.060599448960475796,
+  "last_completed_protocol_id": "b2_gated_burst_correlated_3s_50uA",
+  "last_completed_seed": 45,
+  "outputs": [
+    "metadata.json",
+    "progress.json",
+    "raw_trials.csv",
+    "summary.csv"
+  ],
+  "pending_jobs": 0,
+  "protocol_count": 60,
+  "resume_fingerprint": "09e0e1ae5a05bcd48a7085cc831f284c67dcda14c6c3b992740152942e50daf4",
+  "run_id": "overlapping_shared_input_association_seed045",
+  "seed_job_count": 1,
+  "seeds": [
+    45
+  ],
+  "started_at_utc": "2026-06-20T00:57:35.089640+00:00",
+  "summary_rows": 60,
+  "task_name": "overlapping_shared_input_association",
+  "task_regime": {
+    "criterion_score": 0.25,
+    "description": "Train A-alone->T1 and A+context->T2; score context-specific shared-input mapping.",
+    "eval_repetitions": 8,
+    "max_training_repetitions": 80,
+    "name": "overlapping_shared_input_association",
+    "probes": [
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "positive",
+        "name": "input_correct",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          17
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "positive",
+        "name": "input_context_correct",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          33
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "negative",
+        "name": "input_crossed",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          33
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "negative",
+        "name": "input_context_crossed",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          17
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [],
+        "expected": "negative",
+        "name": "sham_target_a",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          17
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [],
+        "expected": "negative",
+        "name": "sham_target_context",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          33
+        ]
+      }
+    ],
+    "training_trials": [
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              17
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 12000
+          }
+        ],
+        "name": "input_to_target_a"
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              33
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 12000
+          }
+        ],
+        "name": "input_context_to_target_context"
+      }
+    ]
+  },
+  "updated_at_utc": "2026-06-20T01:14:05.196259+00:00"
+}

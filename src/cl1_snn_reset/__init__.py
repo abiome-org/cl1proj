@@ -35,6 +35,9 @@ from .task_regimes import (
     evaluate_probe,
     evaluate_regime,
     evoked_channel_response,
+    multi_association_mapping,
+    overlapping_shared_input_association,
+    overlapping_shared_target_association,
     pattern_discrimination,
     run_regime_grid,
     run_regime_reset_trial,
@@ -44,6 +47,7 @@ from .task_regimes import (
     summarize_regime_grid,
     temporal_order_discrimination,
     train_regime,
+    xor_electrode_classification,
 )
 from .task import (
     EvokedTaskMetrics,
@@ -98,6 +102,9 @@ __all__ = [
     "generate_colored_events",
     "load_experiment_config",
     "load_suite",
+    "multi_association_mapping",
+    "overlapping_shared_input_association",
+    "overlapping_shared_target_association",
     "pareto_front",
     "pareto_mask",
     "pattern_discrimination",
@@ -121,4 +128,5 @@ __all__ = [
     "train_regime",
     "validate_suite_dir",
     "weight_erasure_score",
+    "xor_electrode_classification",
 ]

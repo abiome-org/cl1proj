@@ -183,6 +183,213 @@ def pattern_discrimination(
     )
 
 
+def overlapping_shared_target_association(
+    *,
+    input_a: int = 8,
+    input_b: int = 24,
+    shared_target: int = 17,
+    distractor_target: int = 33,
+    input_current_uA: float = 80.0,
+    target_current_uA: float = 80.0,
+    pair_delay_ms: float = 12.0,
+    duration_ms: float = 110.0,
+    response_window_ms: tuple[float, float] = (4.0, 50.0),
+    criterion_score: float = 0.35,
+    max_training_repetitions: int = 100,
+    eval_repetitions: int = 16,
+) -> TaskRegime:
+    """Two inputs converge onto one learned target, with an untrained distractor target as a specificity control."""
+    a_event = stim_event_ms(0.0, (input_a,), input_current_uA)
+    b_event = stim_event_ms(0.0, (input_b,), input_current_uA)
+    target_event = stim_event_ms(pair_delay_ms, (shared_target,), target_current_uA)
+    return TaskRegime(
+        name="overlapping_shared_target_association",
+        description="Train A1->T and A2->T; score shared-target responses over sham and distractor-target probes.",
+        training_trials=(
+            TrainingTrialSpec("a_to_shared_target", (a_event, target_event), duration_ms),
+            TrainingTrialSpec("b_to_shared_target", (b_event, target_event), duration_ms),
+        ),
+        probes=(
+            ProbeSpec("a_shared_correct", (a_event,), (shared_target,), response_window_ms, duration_ms, "positive"),
+            ProbeSpec("b_shared_correct", (b_event,), (shared_target,), response_window_ms, duration_ms, "positive"),
+            ProbeSpec("a_distractor", (a_event,), (distractor_target,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("b_distractor", (b_event,), (distractor_target,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("sham_shared", (), (shared_target,), response_window_ms, duration_ms, "negative"),
+        ),
+        criterion_score=criterion_score,
+        max_training_repetitions=max_training_repetitions,
+        eval_repetitions=eval_repetitions,
+    )
+
+
+def overlapping_shared_input_association(
+    *,
+    input_channel: int = 8,
+    context_channel: int = 24,
+    target_a: int = 17,
+    target_context: int = 33,
+    input_current_uA: float = 80.0,
+    target_current_uA: float = 80.0,
+    pair_delay_ms: float = 12.0,
+    duration_ms: float = 110.0,
+    response_window_ms: tuple[float, float] = (4.0, 50.0),
+    criterion_score: float = 0.25,
+    max_training_repetitions: int = 120,
+    eval_repetitions: int = 16,
+) -> TaskRegime:
+    """One input maps to different targets depending on whether a context electrode is co-active."""
+    input_event = stim_event_ms(0.0, (input_channel,), input_current_uA)
+    context_event = stim_event_ms(0.0, (context_channel,), input_current_uA)
+    target_a_event = stim_event_ms(pair_delay_ms, (target_a,), target_current_uA)
+    target_context_event = stim_event_ms(pair_delay_ms, (target_context,), target_current_uA)
+    context_probe = (input_event, context_event)
+    return TaskRegime(
+        name="overlapping_shared_input_association",
+        description="Train A-alone->T1 and A+context->T2; score context-specific shared-input mapping.",
+        training_trials=(
+            TrainingTrialSpec("input_to_target_a", (input_event, target_a_event), duration_ms),
+            TrainingTrialSpec("input_context_to_target_context", (*context_probe, target_context_event), duration_ms),
+        ),
+        probes=(
+            ProbeSpec("input_correct", (input_event,), (target_a,), response_window_ms, duration_ms, "positive"),
+            ProbeSpec(
+                "input_context_correct",
+                context_probe,
+                (target_context,),
+                response_window_ms,
+                duration_ms,
+                "positive",
+            ),
+            ProbeSpec("input_crossed", (input_event,), (target_context,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("input_context_crossed", context_probe, (target_a,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("sham_target_a", (), (target_a,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("sham_target_context", (), (target_context,), response_window_ms, duration_ms, "negative"),
+        ),
+        criterion_score=criterion_score,
+        max_training_repetitions=max_training_repetitions,
+        eval_repetitions=eval_repetitions,
+    )
+
+
+def multi_association_mapping(
+    *,
+    input_channels: tuple[int, ...] = (8, 16, 24, 40),
+    target_channels: tuple[int, ...] = (17, 25, 33, 49),
+    input_current_uA: float = 80.0,
+    target_current_uA: float = 80.0,
+    pair_delay_ms: float = 12.0,
+    duration_ms: float = 120.0,
+    response_window_ms: tuple[float, float] = (4.0, 55.0),
+    criterion_score: float = 0.3,
+    max_training_repetitions: int = 120,
+    eval_repetitions: int = 16,
+) -> TaskRegime:
+    """Several independent electrode associations trained in the same recurrent network."""
+    if len(input_channels) != len(target_channels):
+        raise ValueError("input_channels and target_channels must have the same length.")
+    if len(input_channels) < 2:
+        raise ValueError("multi_association_mapping requires at least two input-target pairs.")
+
+    input_events = [stim_event_ms(0.0, (channel,), input_current_uA) for channel in input_channels]
+    target_events = [stim_event_ms(pair_delay_ms, (channel,), target_current_uA) for channel in target_channels]
+    training_trials = tuple(
+        TrainingTrialSpec(
+            f"input_{index + 1}_to_target_{index + 1}",
+            (input_event, target_event),
+            duration_ms,
+        )
+        for index, (input_event, target_event) in enumerate(zip(input_events, target_events, strict=True))
+    )
+    positive_probes = tuple(
+        ProbeSpec(
+            f"input_{index + 1}_correct",
+            (input_event,),
+            (int(target_channels[index]),),
+            response_window_ms,
+            duration_ms,
+            "positive",
+        )
+        for index, input_event in enumerate(input_events)
+    )
+    crossed_probes = tuple(
+        ProbeSpec(
+            f"input_{input_index + 1}_target_{target_index + 1}_crossed",
+            (input_events[input_index],),
+            (int(target_channels[target_index]),),
+            response_window_ms,
+            duration_ms,
+            "negative",
+        )
+        for input_index in range(len(input_channels))
+        for target_index in range(len(target_channels))
+        if input_index != target_index
+    )
+    return TaskRegime(
+        name="multi_association_mapping",
+        description="Train multiple input electrodes to distinct targets; score correct mappings over crossed probes.",
+        training_trials=training_trials,
+        probes=(
+            *positive_probes,
+            *crossed_probes,
+        ),
+        criterion_score=criterion_score,
+        max_training_repetitions=max_training_repetitions,
+        eval_repetitions=eval_repetitions,
+    )
+
+
+def xor_electrode_classification(
+    *,
+    input_a: int = 8,
+    input_b: int = 24,
+    xor_target: int = 17,
+    conjunction_target: int = 33,
+    input_current_uA: float = 80.0,
+    target_current_uA: float = 80.0,
+    pair_delay_ms: float = 12.0,
+    duration_ms: float = 120.0,
+    response_window_ms: tuple[float, float] = (4.0, 55.0),
+    criterion_score: float = 0.25,
+    max_training_repetitions: int = 140,
+    eval_repetitions: int = 16,
+) -> TaskRegime:
+    """XOR-like classification: either input alone maps to one target, both inputs together map to another."""
+    a_event = stim_event_ms(0.0, (input_a,), input_current_uA)
+    b_event = stim_event_ms(0.0, (input_b,), input_current_uA)
+    both_probe = (a_event, b_event)
+    xor_target_event = stim_event_ms(pair_delay_ms, (xor_target,), target_current_uA)
+    conjunction_target_event = stim_event_ms(pair_delay_ms, (conjunction_target,), target_current_uA)
+    return TaskRegime(
+        name="xor_electrode_classification",
+        description="Train A-alone and B-alone to one target, but A+B together to a second target.",
+        training_trials=(
+            TrainingTrialSpec("a_to_xor_target", (a_event, xor_target_event), duration_ms),
+            TrainingTrialSpec("b_to_xor_target", (b_event, xor_target_event), duration_ms),
+            TrainingTrialSpec("a_b_to_conjunction_target", (*both_probe, conjunction_target_event), duration_ms),
+        ),
+        probes=(
+            ProbeSpec("a_xor_correct", (a_event,), (xor_target,), response_window_ms, duration_ms, "positive"),
+            ProbeSpec("b_xor_correct", (b_event,), (xor_target,), response_window_ms, duration_ms, "positive"),
+            ProbeSpec(
+                "a_b_conjunction_correct",
+                both_probe,
+                (conjunction_target,),
+                response_window_ms,
+                duration_ms,
+                "positive",
+            ),
+            ProbeSpec("a_conjunction_crossed", (a_event,), (conjunction_target,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("b_conjunction_crossed", (b_event,), (conjunction_target,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("a_b_xor_crossed", both_probe, (xor_target,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("sham_xor_target", (), (xor_target,), response_window_ms, duration_ms, "negative"),
+            ProbeSpec("sham_conjunction_target", (), (conjunction_target,), response_window_ms, duration_ms, "negative"),
+        ),
+        criterion_score=criterion_score,
+        max_training_repetitions=max_training_repetitions,
+        eval_repetitions=eval_repetitions,
+    )
+
+
 def temporal_order_discrimination(
     *,
     channel_a: int = 8,

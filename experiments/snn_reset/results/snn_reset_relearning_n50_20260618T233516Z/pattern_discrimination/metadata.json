@@ -1,0 +1,391 @@
+{
+  "argv": [
+    "experiments/snn_reset/run_grid.py",
+    "--output-root",
+    "experiments/snn_reset/results/snn_reset_relearning_n50_20260618T233516Z",
+    "--tasks",
+    "conditioned_electrode_association",
+    "pattern_discrimination",
+    "--neurons",
+    "10000",
+    "--seeds",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "38",
+    "39",
+    "40",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "--training-repetitions",
+    "60",
+    "--eval-repetitions",
+    "8",
+    "--measure-relearning",
+    "--relearn-repetitions",
+    "60",
+    "--workers",
+    "6",
+    "--executor",
+    "process",
+    "--progress-interval",
+    "30",
+    "--input-current-uA",
+    "120",
+    "--target-current-uA",
+    "120"
+  ],
+  "completed_jobs": 3000,
+  "config": {
+    "backend": "numpy",
+    "background_noise_mv": 1.0,
+    "build_workers": 1,
+    "consolidation_rest_s": 1.0,
+    "criterion_score": null,
+    "eval_repetitions": 8,
+    "executor": "process",
+    "homeostasis_interval_ms": 100.0,
+    "homeostasis_rate": 0.0,
+    "input_channel": 8,
+    "input_current_uA": 120.0,
+    "limit_protocols": null,
+    "local_candidate_multiplier": 6,
+    "max_out_degree": 96,
+    "mean_out_degree": 64,
+    "measure_relearning": true,
+    "neurons": 10000,
+    "output_dir": null,
+    "output_root": "experiments/snn_reset/results/snn_reset_relearning_n50_20260618T233516Z",
+    "progress_interval": 30,
+    "relearn_only_if_forgot": false,
+    "relearn_repetitions": 60,
+    "resume": false,
+    "run_id": null,
+    "second_input_channel": 24,
+    "second_target_channel": 33,
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "spontaneous_rate_hz": 0.0,
+    "stop_at_criterion": false,
+    "stop_on_failure": false,
+    "target_channel": 17,
+    "target_current_uA": 120.0,
+    "tasks": [
+      "conditioned_electrode_association",
+      "pattern_discrimination"
+    ],
+    "training_repetitions": 60,
+    "warmup_s": 0.5,
+    "workers": 6
+  },
+  "elapsed_s": 3480.4571354590007,
+  "eta_s": 0.0,
+  "finished_at_utc": "2026-06-19T01:21:21.671898+00:00",
+  "git_commit": "22e96b54b816578ed35ad36e3dddf58056a1c11e",
+  "job_count": 3000,
+  "jobs_per_s": 0.8620005999214576,
+  "last_completed_protocol_id": "b2_gated_burst_correlated_3s_50uA",
+  "last_completed_seed": 50,
+  "outputs": [
+    "metadata.json",
+    "progress.json",
+    "raw_trials.csv",
+    "summary.csv"
+  ],
+  "pending_jobs": 0,
+  "protocol_count": 60,
+  "resume_fingerprint": "fd87f2f101fbb6f5b82742611395ba96fc6e3e48b6e30bd7e39ccfeec8167f50",
+  "run_id": "pattern_discrimination",
+  "seed_job_count": 50,
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50
+  ],
+  "started_at_utc": "2026-06-19T00:23:21.199522+00:00",
+  "summary_rows": 60,
+  "task_name": "pattern_discrimination",
+  "task_regime": {
+    "criterion_score": 0.35,
+    "description": "Train A1->B1 and A2->B2; score correct targets over crossed targets.",
+    "eval_repetitions": 8,
+    "max_training_repetitions": 60,
+    "name": "pattern_discrimination",
+    "probes": [
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "positive",
+        "name": "a_correct",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          17
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "positive",
+        "name": "b_correct",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          33
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "negative",
+        "name": "a_crossed",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          33
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "negative",
+        "name": "b_crossed",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          17
+        ]
+      }
+    ],
+    "training_trials": [
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              17
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 12000
+          }
+        ],
+        "name": "a_to_target_a"
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              33
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 12000
+          }
+        ],
+        "name": "b_to_target_b"
+      }
+    ]
+  },
+  "updated_at_utc": "2026-06-19T01:21:21.490764+00:00"
+}

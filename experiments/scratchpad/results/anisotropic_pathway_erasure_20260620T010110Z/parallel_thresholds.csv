@@ -1,0 +1,4 @@
+seed,parallel_threshold_fraction,parallel_threshold_percent,parallel_threshold_first_below_accuracy,max_orthogonal_intact_fraction,orthogonal_to_parallel_intact_ratio
+1,0.025999999999999995,2.5999999999999996,0.65625,1.0,38.46153846153847
+3,0.025999999999999995,2.5999999999999996,0.65625,1.0,38.46153846153847
+4,0.043,4.3,0.65625,1.0,23.255813953488374

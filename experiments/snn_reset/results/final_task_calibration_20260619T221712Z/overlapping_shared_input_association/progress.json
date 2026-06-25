@@ -1,0 +1,320 @@
+{
+  "argv": [
+    "experiments/snn_reset/run_grid.py",
+    "--output-root",
+    "experiments/snn_reset/results/final_task_calibration_20260619T221712Z",
+    "--tasks",
+    "conditioned_electrode_association",
+    "pattern_discrimination",
+    "overlapping_shared_target_association",
+    "overlapping_shared_input_association",
+    "multi_association_mapping",
+    "xor_electrode_classification",
+    "--neurons",
+    "10000",
+    "--seeds",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "--limit-protocols",
+    "1",
+    "--workers",
+    "6",
+    "--executor",
+    "process",
+    "--training-repetitions",
+    "80",
+    "--eval-repetitions",
+    "8",
+    "--measure-relearning",
+    "--relearn-repetitions",
+    "80",
+    "--input-current-uA",
+    "120",
+    "--target-current-uA",
+    "120",
+    "--progress-interval",
+    "5"
+  ],
+  "completed_jobs": 5,
+  "config": {
+    "backend": "numpy",
+    "background_noise_mv": 1.0,
+    "build_workers": 1,
+    "consolidation_rest_s": 1.0,
+    "criterion_score": null,
+    "eval_repetitions": 8,
+    "executor": "process",
+    "fourth_input_channel": 48,
+    "fourth_target_channel": 57,
+    "homeostasis_interval_ms": 100.0,
+    "homeostasis_rate": 0.0,
+    "input_channel": 8,
+    "input_current_uA": 120.0,
+    "limit_protocols": 1,
+    "local_candidate_multiplier": 6,
+    "max_out_degree": 96,
+    "mean_out_degree": 64,
+    "measure_relearning": true,
+    "neurons": 10000,
+    "output_dir": null,
+    "output_root": "experiments/snn_reset/results/final_task_calibration_20260619T221712Z",
+    "progress_interval": 5,
+    "relearn_only_if_forgot": false,
+    "relearn_repetitions": 80,
+    "resume": false,
+    "run_id": null,
+    "second_input_channel": 24,
+    "second_target_channel": 33,
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "spontaneous_rate_hz": 0.0,
+    "stop_at_criterion": false,
+    "stop_on_failure": false,
+    "target_channel": 17,
+    "target_current_uA": 120.0,
+    "tasks": [
+      "conditioned_electrode_association",
+      "pattern_discrimination",
+      "overlapping_shared_target_association",
+      "overlapping_shared_input_association",
+      "multi_association_mapping",
+      "xor_electrode_classification"
+    ],
+    "third_input_channel": 40,
+    "third_target_channel": 49,
+    "training_repetitions": 80,
+    "warmup_s": 0.5,
+    "workers": 6
+  },
+  "elapsed_s": 71.36160095898958,
+  "eta_s": 0.0,
+  "finished_at_utc": "2026-06-19T22:20:55.825997+00:00",
+  "git_commit": "22e96b54b816578ed35ad36e3dddf58056a1c11e",
+  "job_count": 5,
+  "jobs_per_s": 0.07012755984506507,
+  "last_completed_protocol_id": "b-2_static_shared_3s_10uA",
+  "last_completed_seed": 3,
+  "outputs": [
+    "metadata.json",
+    "progress.json",
+    "raw_trials.csv",
+    "summary.csv"
+  ],
+  "pending_jobs": 0,
+  "protocol_count": 1,
+  "resume_fingerprint": "906d58145b47a0efbbf55c6a9db239be85c77dfb971debc98997acb29806e2d9",
+  "run_id": "overlapping_shared_input_association",
+  "seed_job_count": 5,
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "started_at_utc": "2026-06-19T22:19:44.464634+00:00",
+  "summary_rows": 1,
+  "task_name": "overlapping_shared_input_association",
+  "task_regime": {
+    "criterion_score": 0.25,
+    "description": "Train A-alone->T1 and A+context->T2; score context-specific shared-input mapping.",
+    "eval_repetitions": 8,
+    "max_training_repetitions": 80,
+    "name": "overlapping_shared_input_association",
+    "probes": [
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "positive",
+        "name": "input_correct",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          17
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "positive",
+        "name": "input_context_correct",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          33
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "negative",
+        "name": "input_crossed",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          33
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          }
+        ],
+        "expected": "negative",
+        "name": "input_context_crossed",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          17
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [],
+        "expected": "negative",
+        "name": "sham_target_a",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          17
+        ]
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [],
+        "expected": "negative",
+        "name": "sham_target_context",
+        "response_window_ms": [
+          4.0,
+          50.0
+        ],
+        "target_channels": [
+          33
+        ]
+      }
+    ],
+    "training_trials": [
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              17
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 12000
+          }
+        ],
+        "name": "input_to_target_a"
+      },
+      {
+        "duration_ms": 110.0,
+        "events": [
+          {
+            "channels": [
+              8
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              24
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 0
+          },
+          {
+            "channels": [
+              33
+            ],
+            "current_uA": 120.0,
+            "pulse_width_us": 160,
+            "time_us": 12000
+          }
+        ],
+        "name": "input_context_to_target_context"
+      }
+    ]
+  },
+  "updated_at_utc": "2026-06-19T22:20:55.763044+00:00"
+}

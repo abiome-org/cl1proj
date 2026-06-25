@@ -96,6 +96,10 @@ def add_common_task_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--target-channel", type=int, default=17)
     parser.add_argument("--second-input-channel", type=int, default=24)
     parser.add_argument("--second-target-channel", type=int, default=33)
+    parser.add_argument("--third-input-channel", type=int, default=40)
+    parser.add_argument("--third-target-channel", type=int, default=49)
+    parser.add_argument("--fourth-input-channel", type=int, default=48)
+    parser.add_argument("--fourth-target-channel", type=int, default=57)
 
 
 def culture_from_args(args: argparse.Namespace) -> CultureConfig:
