@@ -1,0 +1,161 @@
+{
+  "notes": {
+    "bootstrap_replicates": 1000,
+    "pca_representation": "64x64 channel-pair mean weight-delta vectors from manifold_analysis channel_delta arrays",
+    "reset_cosine_definition": "dot(reset_minus_no_reset, W_naive - W_trained) / (norm(reset_minus_no_reset) * norm(W_trained - W_naive))"
+  },
+  "pca": {
+    "conditioned_electrode_association": {
+      "features": 4096,
+      "mean_axis_angle_deg_mean": 20.151154362564874,
+      "pairwise_angle_deg_median": 27.914074986052107,
+      "pca_components_80": 10,
+      "pca_components_90": 14,
+      "pca_participation_ratio": 10.980836930370725,
+      "pca_top1": 0.17871866408191522,
+      "pca_top5": 0.6000991875709637,
+      "seeds": 50,
+      "svd_top1": 0.8684529386133559,
+      "task_label": "Association"
+    },
+    "multi_association_mapping": {
+      "features": 4096,
+      "mean_axis_angle_deg_mean": 21.31242129997458,
+      "pairwise_angle_deg_median": 30.215724026053664,
+      "pca_components_80": 18,
+      "pca_components_90": 27,
+      "pca_participation_ratio": 20.90076548696498,
+      "pca_top1": 0.10662427575492116,
+      "pca_top5": 0.38363989936264226,
+      "seeds": 50,
+      "svd_top1": 0.8652258544803588,
+      "task_label": "Multi-map"
+    },
+    "overlapping_shared_input_association": {
+      "features": 4096,
+      "mean_axis_angle_deg_mean": 28.05179782169375,
+      "pairwise_angle_deg_median": 39.25231761696288,
+      "pca_components_80": 20,
+      "pca_components_90": 28,
+      "pca_participation_ratio": 22.698088907345134,
+      "pca_top1": 0.09413633068674514,
+      "pca_top5": 0.3678373652781925,
+      "seeds": 50,
+      "svd_top1": 0.7767754735520185,
+      "task_label": "Shared input"
+    },
+    "overlapping_shared_target_association": {
+      "features": 4096,
+      "mean_axis_angle_deg_mean": 21.61482450651954,
+      "pairwise_angle_deg_median": 30.678730213936568,
+      "pca_components_80": 13,
+      "pca_components_90": 19,
+      "pca_participation_ratio": 14.553035173171859,
+      "pca_top1": 0.1307750290440944,
+      "pca_top5": 0.5033915326629903,
+      "seeds": 50,
+      "svd_top1": 0.8584370642839673,
+      "task_label": "Shared target"
+    },
+    "pattern_discrimination": {
+      "features": 4096,
+      "mean_axis_angle_deg_mean": 21.653313327689112,
+      "pairwise_angle_deg_median": 30.819792208757615,
+      "pca_components_80": 15,
+      "pca_components_90": 21,
+      "pca_participation_ratio": 15.803197028883265,
+      "pca_top1": 0.14040049689018352,
+      "pca_top5": 0.4759320344193243,
+      "seeds": 50,
+      "svd_top1": 0.8582759844979806,
+      "task_label": "Pattern"
+    },
+    "xor_electrode_classification": {
+      "features": 4096,
+      "mean_axis_angle_deg_mean": 27.936334024339068,
+      "pairwise_angle_deg_median": 39.08815672927051,
+      "pca_components_80": 21,
+      "pca_components_90": 29,
+      "pca_participation_ratio": 24.836951471244696,
+      "pca_top1": 0.08727925598632047,
+      "pca_top5": 0.33573587880476574,
+      "seeds": 50,
+      "svd_top1": 0.7783559803987187,
+      "task_label": "XOR"
+    }
+  },
+  "reset_best_protocols": {
+    "conditioned_electrode_association": {
+      "forgetting_score_mean": 0.125,
+      "forgetting_score_sd": 0.0,
+      "protocol_id": "b-2_chirp_shared_3s_50uA",
+      "relearn_savings_mean": 1.0,
+      "reset_norm_over_trace_norm_mean": 5.1475726315166215,
+      "reset_orthogonal_fraction_mean": 0.9998970664826394,
+      "reset_to_erasure_axis_abs_cosine_mean": 0.013830413964111278,
+      "reset_to_erasure_axis_angle_deg_mean": 89.20754467420987,
+      "reset_to_erasure_axis_cosine_mean": 0.013830413964111278,
+      "task_label": "Association"
+    },
+    "multi_association_mapping": {
+      "forgetting_score_mean": 0.24499999999999994,
+      "forgetting_score_sd": 0.03329078917645133,
+      "protocol_id": "b0_chirp_shared_3s_50uA",
+      "relearn_savings_mean": 1.0,
+      "reset_norm_over_trace_norm_mean": 2.232898587813729,
+      "reset_orthogonal_fraction_mean": 0.9997774694403506,
+      "reset_to_erasure_axis_abs_cosine_mean": 0.02065256535492391,
+      "reset_to_erasure_axis_angle_deg_mean": 88.81660033953982,
+      "reset_to_erasure_axis_cosine_mean": 0.02065256535492391,
+      "task_label": "Multi-map"
+    },
+    "overlapping_shared_input_association": {
+      "forgetting_score_mean": 0.09375,
+      "forgetting_score_sd": 0.0,
+      "protocol_id": "b-2_chirp_shared_3s_50uA",
+      "relearn_savings_mean": 0.8,
+      "reset_norm_over_trace_norm_mean": 3.175149748779725,
+      "reset_orthogonal_fraction_mean": 0.9996447803034282,
+      "reset_to_erasure_axis_abs_cosine_mean": 0.026409123060561646,
+      "reset_to_erasure_axis_angle_deg_mean": 88.48668308066433,
+      "reset_to_erasure_axis_cosine_mean": 0.026409123060561646,
+      "task_label": "Shared input"
+    },
+    "overlapping_shared_target_association": {
+      "forgetting_score_mean": 0.3716666666666667,
+      "forgetting_score_sd": 0.11162579209267656,
+      "protocol_id": "b-2_chirp_shared_3s_50uA",
+      "relearn_savings_mean": 1.0,
+      "reset_norm_over_trace_norm_mean": 3.845462371797388,
+      "reset_orthogonal_fraction_mean": 0.9998810381765959,
+      "reset_to_erasure_axis_abs_cosine_mean": 0.015220604288746775,
+      "reset_to_erasure_axis_angle_deg_mean": 89.12788723217658,
+      "reset_to_erasure_axis_cosine_mean": 0.015220604288746775,
+      "task_label": "Shared target"
+    },
+    "pattern_discrimination": {
+      "forgetting_score_mean": 0.5275,
+      "forgetting_score_sd": 0.12187418236251113,
+      "protocol_id": "b-2_chirp_correlated_3s_50uA",
+      "relearn_savings_mean": 1.0,
+      "reset_norm_over_trace_norm_mean": 2.50895427236002,
+      "reset_orthogonal_fraction_mean": 0.9999857435039862,
+      "reset_to_erasure_axis_abs_cosine_mean": 0.004043947520830162,
+      "reset_to_erasure_axis_angle_deg_mean": 89.88226084502458,
+      "reset_to_erasure_axis_cosine_mean": 0.0020548998261350035,
+      "task_label": "Pattern"
+    },
+    "xor_electrode_classification": {
+      "forgetting_score_mean": 0.0749999999999999,
+      "forgetting_score_sd": 0.0,
+      "protocol_id": "b-2_chirp_shared_3s_50uA",
+      "relearn_savings_mean": 1.0,
+      "reset_norm_over_trace_norm_mean": 2.9321416305386068,
+      "reset_orthogonal_fraction_mean": 0.9995366424587745,
+      "reset_to_erasure_axis_abs_cosine_mean": 0.03019395598790166,
+      "reset_to_erasure_axis_angle_deg_mean": 88.26973802613936,
+      "reset_to_erasure_axis_cosine_mean": 0.03019395598790166,
+      "task_label": "XOR"
+    }
+  }
+}

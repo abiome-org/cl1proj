@@ -1,0 +1,38 @@
+{
+  "argv": [
+    "experiments/snn_reset/pca_weight_geometry.py",
+    "--bootstrap",
+    "1000",
+    "--out",
+    "experiments/snn_reset/results/pca_weight_geometry_20260629T212729Z"
+  ],
+  "config": {
+    "bootstrap": 1000,
+    "grid_dir": "/Users/j8ck/Documents/cl1proj/experiments/snn_reset/results/snn_reset_final_n50_all_tasks_20260620T022002Z",
+    "manifold_dir": "/Users/j8ck/Documents/cl1proj/experiments/snn_reset/results/manifold_analysis_final_n50_modal_20260620T004937Z_combined",
+    "out": "experiments/snn_reset/results/pca_weight_geometry_20260629T212729Z",
+    "random_seed": 20260629,
+    "tasks": null
+  },
+  "created_at_utc": "2026-06-29T21:51:25.441971+00:00",
+  "git_commit": "b8096592929bcfb6bf140ffc6a2f804707347a77",
+  "outputs": [
+    "metadata.json",
+    "paper_numbers.json",
+    "pca_task_summary.csv",
+    "pca_seed_scores.csv",
+    "pairwise_delta_cosines.csv",
+    "pca_variance_curves.csv",
+    "reset_orthogonality.csv",
+    "reset_orthogonality_task_summary.csv",
+    "reset_orthogonality_protocol_summary.csv",
+    "reset_orthogonality_best_protocols.csv",
+    "F_weight_pca_dimensionality.pdf",
+    "F_weight_pca_dimensionality.png",
+    "F_weight_pca_scores.pdf",
+    "F_weight_pca_scores.png",
+    "F_reset_axis_orthogonality.pdf",
+    "F_reset_axis_orthogonality.png"
+  ],
+  "run_id": "pca_weight_geometry_20260629T212729Z"
+}
